@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIPU - Sistem Informasi Panitia Ujian</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SheetJS untuk Import Excel -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- SortableJS untuk Drag & Drop Ruangan -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    
+    /* Layout Setup */
+    .app-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: #111827; color: #fff; transition: all 0.3s; }
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* Print Styles (A4 Setup untuk Kartu Ujian & Panitia) */
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 210mm; background: #fff; }
+      .page-break { page-break-after: always; }
+      /* Ukuran presisi Kartu Peserta (6.5 x 9.5 cm) - 6 per halaman */
+      .kartu-peserta { width: 95mm; height: 65mm; border: 1px dashed #000; margin: 5mm; float: left; padding: 5mm; box-sizing: border-box; }
+    }
+    
+    .hidden { display: none !important; }
+    .nav-item.active { background-color: #374151; border-left: 4px solid #3b82f6; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SECTION -->
+  <div id="login-section" class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-blue-600 mb-2"><i class="fas fa-school"></i> SIPU</h1>
+        <p class="text-gray-500">Sistem Informasi Panitia Ujian</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+          <input type="text" id="username" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+          <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+          Masuk Dashboard
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP SECTION -->
+  <div id="app-section" class="app-container hidden">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar flex flex-col">
+      <div class="p-6 text-center border-b border-gray-700">
+        <h2 class="text-2xl font-bold text-white"><i class="fas fa-graduation-cap text-blue-400"></i> SIPU</h2>
+        <p class="text-xs text-gray-400 mt-1">Versi 1.0 (Offline/Online)</p>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-4">
+        <ul class="space-y-1">
+          <li><a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-home w-6"></i> Dashboard</a></li>
+          <li><a href="#" onclick="switchTab('siswa')" id="nav-siswa" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-users w-6"></i> Data Siswa</a></li>
+          <li><a href="#" onclick="switchTab('panitia')" id="nav-panitia" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-user-tie w-6"></i> Panitia & Pengawas</a></li>
+          <li><a href="#" onclick="switchTab('ruang')" id="nav-ruang" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-door-open w-6"></i> Bagi Ruangan</a></li>
+          <li><a href="#" onclick="switchTab('jadwal')" id="nav-jadwal" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-calendar-alt w-6"></i> Jadwal Pengawasan</a></li>
+          <li><a href="#" onclick="switchTab('cetak')" id="nav-cetak" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-print w-6"></i> Cetak Dokumen</a></li>
+          <li><a href="#" onclick="switchTab('backup')" id="nav-backup" class="nav-item flex items-center py-3 px-6 text-gray-300 hover:bg-gray-800 hover:text-white transition"><i class="fas fa-database w-6"></i> Backup & Restore</a></li>
+        </ul>
+      </nav>
+      <div class="p-4 border-t border-gray-700">
+        <button onclick="handleLogout()" class="w-full flex items-center justify-center py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"><i class="fas fa-sign-out-alt mr-2"></i> Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Top Navbar -->
+      <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-10">
+        <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard & Pengaturan</h2>
+        <div class="flex items-center space-x-4">
+          <div class="text-sm text-gray-600 text-right">
+            <p class="font-semibold">Administrator</p>
+            <p class="text-xs text-green-500"><i class="fas fa-circle"></i> Sistem Aktif</p>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" class="h-10 w-10 rounded-full border border-gray-200">
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-content">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
+              <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i class="fas fa-users fa-2x"></i></div>
+              <div><p class="text-gray-500 text-sm">Total Siswa</p><p class="text-2xl font-bold" id="stat-siswa">0</p></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
+              <div class="bg-green-100 p-3 rounded-lg text-green-600"><i class="fas fa-door-open fa-2x"></i></div>
+              <div><p class="text-gray-500 text-sm">Kebutuhan Ruang</p><p class="text-2xl font-bold" id="stat-ruang">0</p></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold mb-4 border-b pb-2">Pengaturan Identitas Sekolah & Ujian</h3>
+            <form id="settings-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="block text-sm text-gray-600 mb-1">Nama Sekolah</label><input type="text" class="w-full border rounded p-2" value="SMA Negeri 1 Contoh"></div>
+              <div><label class="block text-sm text-gray-600 mb-1">Tahun Ajaran</label><input type="text" class="w-full border rounded p-2" value="2023/2024"></div>
+              <div><label class="block text-sm text-gray-600 mb-1">Kepala Sekolah</label><input type="text" class="w-full border rounded p-2"></div>
+              <div><label class="block text-sm text-gray-600 mb-1">Ketua Panitia</label><input type="text" class="w-full border rounded p-2"></div>
+              <div><label class="block text-sm text-gray-600 mb-1">Prefix No. Peserta (Contoh: 01-)</label><input type="text" class="w-full border rounded p-2"></div>
+              <div><label class="block text-sm text-gray-600 mb-1">Kapasitas Maksimal Per Ruang</label><input type="number" class="w-full border rounded p-2" value="20"></div>
+              <div class="md:col-span-2 text-right mt-4">
+                <button type="button" onclick="saveData('settings')" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Simpan Pengaturan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- DATA SISWA TAB -->
+        <div id="tab-siswa" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Manajemen Data Siswa</h3>
+              <div class="space-x-2">
+                <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"><i class="fas fa-file-excel mr-1"></i> Import Excel</button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"><i class="fas fa-plus mr-1"></i> Tambah Siswa</button>
+              </div>
+            </div>
+            
+            <div class="flex justify-between mb-4">
+              <input type="text" placeholder="Cari nama atau nisn..." class="border rounded-lg px-4 py-2 w-1/3 text-sm">
+              <select class="border rounded-lg px-4 py-2 text-sm"><option>Semua Kelas</option><option>Kelas 10</option></select>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-gray-100 text-gray-600 text-sm">
+                    <th class="p-3 border-b">No. Peserta</th>
+                    <th class="p-3 border-b">Nama Lengkap</th>
+                    <th class="p-3 border-b">Kelas</th>
+                    <th class="p-3 border-b">Sesi</th>
+                    <th class="p-3 border-b text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-siswa-body">
+                  <!-- Data will be populated via JS -->
+                  <tr><td colspan="5" class="text-center p-6 text-gray-400">Belum ada data. Silakan import atau tambah manual.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination Placeholder -->
+            <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+              <span>Menampilkan 0 data</span>
+              <div class="space-x-1">
+                <button class="px-3 py-1 border rounded hover:bg-gray-100">Sebelumnya</button>
+                <button class="px-3 py-1 border rounded hover:bg-gray-100">Selanjutnya</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BAGI RUANG TAB -->
+        <div id="tab-ruang" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold mb-4">Pengaturan Pembagian Ruang Ujian</h3>
+            
+            <!-- Mode Selection -->
+            <div class="flex space-x-4 mb-6 border-b pb-4">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="modeRuang" checked class="form-radio text-blue-600"> <span>Otomatis (Urut Kelas)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="modeRuang" class="form-radio text-blue-600"> <span>Custom (Drag & Drop)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" name="modeRuang" class="form-radio text-blue-600"> <span>Kelas Gabungan</span>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Ruang 1 -->
+              <div class="border rounded-lg p-4 bg-gray-50">
+                <div class="flex justify-between items-center mb-3 border-b pb-2">
+                  <h4 class="font-bold text-gray-700">Ruang 1 (Kapasitas: 20)</h4>
+                  <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">Terisi: 0</span>
+                </div>
+                <ul id="ruang-1-list" class="min-h-[150px] bg-white border border-dashed border-gray-300 rounded p-2 text-sm text-gray-500 text-center flex flex-col justify-center">
+                  Drag & Drop siswa ke sini (Mode Custom)
+                </ul>
+              </div>
+              <!-- Ruang 2 -->
+              <div class="border rounded-lg p-4 bg-gray-50">
+                <div class="flex justify-between items-center mb-3 border-b pb-2">
+                  <h4 class="font-bold text-gray-700">Ruang 2 (Kapasitas: 20)</h4>
+                  <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded">Terisi: 0</span>
+                </div>
+                <ul id="ruang-2-list" class="min-h-[150px] bg-white border border-dashed border-gray-300 rounded p-2 text-sm text-gray-500 text-center flex flex-col justify-center">
+                  Drag & Drop siswa ke sini (Mode Custom)
+                </ul>
+              </div>
+            </div>
+            
+            <div class="mt-6 text-right">
+              <button class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Generate Ruangan</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CETAK DOKUMEN TAB -->
+        <div id="tab-cetak" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Cetak Administrasi & Kartu (Presisi A4)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button onclick="printCard()" class="border-2 border-blue-100 hover:border-blue-500 bg-blue-50 p-4 rounded-lg text-center transition flex flex-col items-center justify-center">
+                <i class="fas fa-id-card fa-2x text-blue-600 mb-2"></i>
+                <span class="font-semibold text-gray-700 text-sm">Kartu Peserta (A4)</span>
+              </button>
+              <button class="border-2 border-blue-100 hover:border-blue-500 bg-blue-50 p-4 rounded-lg text-center transition flex flex-col items-center justify-center">
+                <i class="fas fa-clipboard-list fa-2x text-blue-600 mb-2"></i>
+                <span class="font-semibold text-gray-700 text-sm">Daftar Hadir</span>
+              </button>
+              <button class="border-2 border-blue-100 hover:border-blue-500 bg-blue-50 p-4 rounded-lg text-center transition flex flex-col items-center justify-center">
+                <i class="fas fa-file-signature fa-2x text-blue-600 mb-2"></i>
+                <span class="font-semibold text-gray-700 text-sm">Berita Acara</span>
+              </button>
+              <button class="border-2 border-blue-100 hover:border-blue-500 bg-blue-50 p-4 rounded-lg text-center transition flex flex-col items-center justify-center">
+                <i class="fas fa-map text-blue-600 fa-2x mb-2"></i>
+                <span class="font-semibold text-gray-700 text-sm">Denah Ruangan</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BACKUP/RESTORE TAB -->
+        <div id="tab-backup" class="tab-content hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold mb-2">Keamanan & Penyimpanan Lokal</h3>
+            <p class="text-gray-500 text-sm mb-6">Sistem ini mendukung pengoperasian offline. Anda dapat mengunduh seluruh data (Backup) dan memulihkannya (Restore) sewaktu-waktu.</p>
+            
+            <div class="flex space-x-4">
+              <button onclick="backupData()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 flex items-center">
+                <i class="fas fa-download mr-2"></i> Backup Data (.json)
+              </button>
+              <label class="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 flex items-center cursor-pointer">
+                <i class="fas fa-upload mr-2"></i> Restore Data
+                <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreData(event)">
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Area Cetak Khusus yang disembunyikan di layar normal -->
+  <div id="print-area" class="hidden">
+    <!-- Template Kartu Peserta akan di-render di sini via JS -->
+  </div>
+
+  <script>
+    // --- KONFIGURASI API ---
+    // GANTI URL INI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyhgWYU9HUu_helVQRHrCIMyHaIyWUzEZ38rAjnE1pVDFIIlVSZHE5gA0XrjHnOHpjCGg/exec';
+    
+    // --- STATE MANAGEMENT LOKAL ---
+    let appData = {
+      settings: {}, siswa: [], panitia: [], ruangan: []
+    };
+
+    // --- FUNGSI LOGIN ---
+    function handleLogin(e) {
+      e.preventDefault();
+      Swal.fire({ title: 'Memeriksa Kredensial...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      // Simulasi Login Offline/Lokal (Untuk Kecepatan UI)
+      setTimeout(() => {
+        Swal.close();
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('app-section').classList.remove('hidden');
+        loadLocalData(); // Load data dari localStorage jika ada
+      }, 800);
+    }
+
+    function handleLogout() {
+      Swal.fire({
+        title: 'Yakin ingin keluar?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Keluar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById('app-section').classList.add('hidden');
+          document.getElementById('login-section').classList.remove('hidden');
+        }
+      });
+    }
+
+    // --- NAVIGASI TABS ---
+    const pageTitles = {
+      'dashboard': 'Dashboard & Pengaturan', 'siswa': 'Manajemen Data Siswa',
+      'panitia': 'Data Panitia & Pengawas', 'ruang': 'Pengaturan Ruangan Ujian',
+      'jadwal': 'Jadwal Pengawasan', 'cetak': 'Pusat Cetak Dokumen', 'backup': 'Backup & Restore Lokal'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      document.getElementById('nav-' + tabId).classList.add('active');
+      document.getElementById('page-title').innerText = pageTitles[tabId] || 'SIPU';
+    }
+
+    // --- INTEGRASI & MOCK DATA (OFFLINE SUPPORT) ---
+    function saveData(type) {
+      Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Pengaturan berhasil disimpan ke penyimpanan lokal.', timer: 1500, showConfirmButton: false });
+      // Di sistem asli: Kirim via fetch() POST ke API_URL
+    }
+
+    function printCard() {
+      // Setup HTML untuk area cetak
+      const printArea = document.getElementById('print-area');
+      printArea.innerHTML = '';
+      printArea.classList.remove('hidden');
+      
+      // Simulasi pembuatan 6 kartu peserta A4
+      for(let i=1; i<=6; i++) {
+        printArea.innerHTML += `
+          <div class="kartu-peserta">
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">
+              <h3 style="font-size: 12px; margin:0; font-weight: bold;">KARTU PESERTA UJIAN</h3>
+              <p style="font-size: 10px; margin:0;">Tahun Ajaran 2023/2024</p>
+            </div>
+            <table style="font-size: 11px; width: 100%;">
+              <tr><td width="30%">No. Peserta</td><td width="5%">:</td><td>01-00${i}</td></tr>
+              <tr><td>Nama</td><td>:</td><td>Siswa Contoh ${i}</td></tr>
+              <tr><td>Kelas / Sesi</td><td>:</td><td>X-1 / Sesi 1</td></tr>
+              <tr><td>Ruang</td><td>:</td><td>Ruang 1</td></tr>
+            </table>
+            <div style="margin-top: 10px; text-align: right; font-size: 10px;">
+              <p>Kepala Sekolah,</p><br><br>
+              <p style="text-decoration: underline;">Dr. Contoh S.Pd</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      window.print();
+      printArea.classList.add('hidden');
+    }
+
+    // --- OFFLINE BACKUP & RESTORE ---
+    function backupData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "sipu_backup_" + new Date().getTime() + ".json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      Swal.fire('Berhasil!', 'File backup .json telah diunduh.', 'success');
+    }
+
+    function restoreData(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            appData = JSON.parse(e.target.result);
+            Swal.fire('Berhasil!', 'Data berhasil direstore. Sistem akan memuat ulang tampilan.', 'success');
+            // Re-render UI here based on appData
+          } catch(err) {
+            Swal.fire('Error', 'Format file backup tidak valid!', 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // --- SORTABLE JS (DRAG & DROP RUANGAN) ---
+    document.addEventListener("DOMContentLoaded", function() {
+      if(document.getElementById('ruang-1-list') && document.getElementById('ruang-2-list')) {
+        new Sortable(document.getElementById('ruang-1-list'), { group: 'shared', animation: 150 });
+        new Sortable(document.getElementById('ruang-2-list'), { group: 'shared', animation: 150 });
+      }
+    });
+  </script>
+</body>
+</html>
