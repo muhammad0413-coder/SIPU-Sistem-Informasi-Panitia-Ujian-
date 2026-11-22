@@ -22,9 +22,8 @@
     .sidebar { width: 260px; background: #0f172a; color: #94a3b8; transition: all 0.3s; font-size: 0.875rem; z-index: 50; }
     .main-content { flex: 1; display: flex; flex-direction: column; overflow-x: hidden; height: 100vh; }
     
-    /* PRINT STYLES F4 (Folio) - 10 Kartu per Lembar */
+    /* PRINT STYLES */
     @media print {
-      @page { size: 215.9mm 330.2mm; margin: 5mm; } 
       body * { visibility: hidden; }
       #print-area, #print-area * { visibility: visible; }
       #print-area { 
@@ -33,12 +32,28 @@
       }
       .page-break { page-break-after: always; width: 100%; height: 0; margin: 0; }
       
-      /* Kartu Peserta: 2 Kolom x 5 Baris */
+      /* Kartu Peserta (F4: 2x5) */
+      .cetak-peserta { @page { size: 215.9mm 330.2mm; margin: 5mm; } }
       .kartu-peserta { 
         width: 48.5%; height: 60mm; border: 1px dashed #000; 
         margin-bottom: 4mm; padding: 4mm; box-sizing: border-box; page-break-inside: avoid;
       }
       
+      /* Kartu Panitia (A4/B2: 2x3) */
+      .cetak-panitia { @page { size: A4 portrait; margin: 10mm; } }
+      .kartu-panitia {
+        width: 48%; height: 85mm; border: 1px dashed #000; 
+        margin-bottom: 5mm; padding: 5mm; box-sizing: border-box; page-break-inside: avoid;
+      }
+
+      /* Dokumen Administrasi (A4) */
+      .cetak-admin { @page { size: A4 portrait; margin: 15mm; } }
+      .doc-admin { width: 100%; font-size: 12px; page-break-after: always; }
+      .doc-admin table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      .doc-admin th, .doc-admin td { border: 1px solid #000; padding: 6px; text-align: left; }
+      .doc-admin th { background-color: #f0f0f0; text-align: center; }
+      
+      /* Global Kop */
       .kop-surat { position: relative; text-align: center; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; min-height: 45px;}
       .kop-logo-kiri { position: absolute; left: 0; top: 0; width: 40px; height: 40px; object-fit: contain; }
       .kop-logo-kanan { position: absolute; right: 0; top: 0; width: 40px; height: 40px; object-fit: contain; }
@@ -58,7 +73,7 @@
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body>
+<body class="">
 
   <!-- LOGIN SECTION -->
   <div id="login-section" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1e2b4d] to-[#0f172a] p-4">
@@ -204,8 +219,9 @@
         <div class="flex justify-between items-center mb-6">
           <h1 class="text-xl font-bold text-gray-800">Manajemen Data Siswa</h1>
           <div class="space-x-2">
-            <button onclick="alert('Fitur Import Excel akan memetakan file .xlsx ke tabel sistem')" class="bg-green-600 text-white px-3 py-2 rounded text-sm"><i class="fas fa-file-excel"></i> Import</button>
-            <button onclick="openModal('modal-siswa')" class="bg-blue-600 text-white px-3 py-2 rounded text-sm"><i class="fas fa-plus"></i> Tambah</button>
+            <input type="file" id="file-import" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
+            <button onclick="document.getElementById('file-import').click()" class="bg-green-600 text-white px-3 py-2 rounded text-sm"><i class="fas fa-file-excel"></i> Import</button>
+            <button onclick="openModalSiswa()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm"><i class="fas fa-plus"></i> Tambah</button>
           </div>
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -213,7 +229,7 @@
             <thead><tr class="bg-gray-100 text-gray-600 border-b"><th class="p-3">No Peserta</th><th class="p-3">Nama</th><th class="p-3">Kelas</th><th class="p-3">Ruang</th><th class="p-3">Aksi</th></tr></thead>
             <tbody id="tb-siswa"></tbody>
           </table>
-          <div class="mt-4 text-xs text-gray-500">Pagination 20 data/halaman aktif secara otomatis (Offline mode).</div>
+          <div class="mt-4 text-xs text-gray-500">Menampilkan seluruh data aktif.</div>
         </div>
       </div>
 
@@ -221,7 +237,7 @@
       <div id="tab-panitia" class="tab-content hidden">
         <div class="flex justify-between items-center mb-6">
           <h1 class="text-xl font-bold text-gray-800">Data Panitia & Pengawas</h1>
-          <button onclick="openModal('modal-panitia')" class="bg-blue-600 text-white px-3 py-2 rounded text-sm"><i class="fas fa-plus"></i> Tambah</button>
+          <button onclick="openModal('modal-panitia')" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="fas fa-plus"></i> Tambah</button>
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <table class="w-full text-left text-sm border-collapse">
@@ -237,14 +253,14 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div class="flex space-x-6 border-b pb-4 mb-6">
             <label class="cursor-pointer flex items-center"><input type="radio" name="modeR" value="urut" class="mr-2" checked onchange="setModeRuang()"> Urut Berdasarkan Kelas</label>
-            <label class="cursor-pointer flex items-center"><input type="radio" name="modeR" value="gabung" class="mr-2" onchange="setModeRuang()"> Kelas Gabungan (Otomatis)</label>
+            <label class="cursor-pointer flex items-center"><input type="radio" name="modeR" value="gabung" class="mr-2" onchange="setModeRuang()"> Kelas Gabungan (Acak/Otomatis)</label>
             <label class="cursor-pointer flex items-center"><input type="radio" name="modeR" value="custom" class="mr-2" onchange="setModeRuang()"> Tentukan Sendiri (Drag & Drop)</label>
           </div>
           
-          <div id="ruang-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div id="ruang-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Rendered by JS -->
           </div>
-          <div class="mt-6 text-right"><button onclick="generateRuang()" class="bg-blue-600 text-white px-4 py-2 rounded"><i class="fas fa-magic"></i> Proses & Terapkan Pembagian</button></div>
+          <div class="mt-6 text-right"><button onclick="generateRuang()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"><i class="fas fa-magic mr-2"></i> Proses & Terapkan Pembagian</button></div>
         </div>
       </div>
 
@@ -252,8 +268,13 @@
       <div id="tab-jadwal" class="tab-content hidden">
         <h1 class="text-xl font-bold text-gray-800 mb-6">Jadwal & Pemetaan Pengawas</h1>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-           <p class="text-sm text-gray-600 mb-4">Fitur ini memetakan data pengawas ke dalam Ruang dan Sesi (Sesi-1, Sesi-2, Sesi-3) berdasarkan mata pelajaran secara otomatis.</p>
-           <button onclick="alert('Modul Generator Jadwal sedang memproses data pengawas...')" class="bg-blue-600 text-white px-4 py-2 rounded"><i class="fas fa-cogs"></i> Generate Jadwal Otomatis</button>
+           <p class="text-sm text-gray-600 mb-4">Fitur ini memetakan data pengawas ke dalam Ruang secara otomatis.</p>
+           <button onclick="generateJadwal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"><i class="fas fa-cogs mr-2"></i> Generate Penugasan Pengawas</button>
+           
+           <div id="jadwal-hasil" class="mt-6 hidden">
+              <h3 class="font-bold mb-3 border-b pb-2">Hasil Pemetaan:</h3>
+              <ul id="list-jadwal" class="list-disc pl-5 text-sm text-gray-700 space-y-1"></ul>
+           </div>
         </div>
       </div>
 
@@ -273,23 +294,23 @@
         <h1 class="text-xl font-bold text-gray-800 mb-6">Cetak Kartu Panitia / Pengawas</h1>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
           <i class="fas fa-id-badge fa-4x text-purple-500 mb-4"></i>
-          <h3 class="text-lg font-bold">Cetak Kartu Ukuran B2</h3>
-          <p class="text-sm text-gray-500 mb-6">Format portrait khusus untuk panitia dan pengawas.</p>
-          <button onclick="alert('Menyiapkan layout portrait B2...')" class="bg-purple-600 text-white px-6 py-2 rounded shadow-lg hover:bg-purple-700">Cetak Sekarang</button>
+          <h3 class="text-lg font-bold">Cetak Kartu Ukuran B2 (Standar ID Card Panitia)</h3>
+          <p class="text-sm text-gray-500 mb-6">Sistem akan mencetak 6 kartu portrait per halaman A4.</p>
+          <button onclick="printCard('panitia')" class="bg-purple-600 text-white px-6 py-2 rounded shadow-lg hover:bg-purple-700">Cetak Sekarang</button>
         </div>
       </div>
 
       <!-- CETAK ADMIN -->
       <div id="tab-cetak-admin" class="tab-content hidden">
-        <h1 class="text-xl font-bold text-gray-800 mb-6">Administrasi Ujian (A4/F4)</h1>
+        <h1 class="text-xl font-bold text-gray-800 mb-6">Administrasi Ujian (Cetak A4)</h1>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500">
+          <div onclick="printAdminDoc('hadir')" class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500 hover:shadow-md transition">
             <i class="fas fa-clipboard-list fa-3x text-gray-400 mb-3"></i><h3 class="font-bold">Daftar Hadir</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500">
+          <div onclick="printAdminDoc('berita')" class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500 hover:shadow-md transition">
             <i class="fas fa-file-signature fa-3x text-gray-400 mb-3"></i><h3 class="font-bold">Berita Acara</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500">
+          <div onclick="printAdminDoc('denah')" class="bg-white p-6 rounded-2xl border text-center cursor-pointer hover:border-blue-500 hover:shadow-md transition">
             <i class="fas fa-map fa-3x text-gray-400 mb-3"></i><h3 class="font-bold">Denah Ruang</h3>
           </div>
         </div>
@@ -299,8 +320,8 @@
       <div id="tab-backup" class="tab-content hidden">
         <h1 class="text-xl font-bold text-gray-800 mb-6">Backup & Restore Offline</h1>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex space-x-4">
-          <button onclick="backupData()" class="bg-indigo-600 text-white px-4 py-2 rounded"><i class="fas fa-download"></i> Backup JSON</button>
-          <label class="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"><i class="fas fa-upload"></i> Restore JSON <input type="file" class="hidden" accept=".json" onchange="restoreData(event)"></label>
+          <button onclick="backupData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"><i class="fas fa-download mr-2"></i> Backup JSON</button>
+          <label class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"><i class="fas fa-upload mr-2"></i> Restore JSON <input type="file" class="hidden" accept=".json" onchange="restoreData(event)"></label>
         </div>
       </div>
 
@@ -332,7 +353,7 @@
   </div>
 
   <script>
-    // URL Backend Google Apps Script Anda (Wajib diisi sesuai instruksi)
+    // URL Backend Google Apps Script Anda
     const API_URL = 'https://script.google.com/macros/s/AKfycbyhgWYU9HUu_helVQRHrCIMyHaIyWUzEZ38rAjnE1pVDFIIlVSZHE5gA0XrjHnOHpjCGg/exec';
 
     // State Aplikasi (Database Offline)
@@ -341,9 +362,26 @@
       siswa: [], panitia: []
     };
 
-    function initApp() {
-      let saved = localStorage.getItem('sipu_db');
-      if(saved) db = JSON.parse(saved);
+    async function initApp() {
+      // Coba ambil data dari Google Sheets saat pertama login
+      Swal.fire({title: 'Memuat Data...', text: 'Sinkronisasi dari Google Sheets', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+      try {
+        let res = await fetch(API_URL + '?action=getData');
+        let json = await res.json();
+        if(json.success && json.data) {
+          db = json.data;
+          // Inisiasi struktur data jika kosong dari cloud
+          if(Array.isArray(db.settings)) db.settings = {};
+          if(!db.siswa) db.siswa = [];
+          if(!db.panitia) db.panitia = [];
+          localStorage.setItem('sipu_db', JSON.stringify(db));
+        }
+      } catch(e) {
+        // Fallback: Gunakan data lokal jika sedang offline
+        let saved = localStorage.getItem('sipu_db');
+        if(saved) db = JSON.parse(saved);
+      }
+      Swal.close();
       refreshUI();
     }
 
@@ -366,19 +404,19 @@
       document.getElementById('dash-ketua').innerText = s.ketua || '-';
 
       // Settings form
-      document.getElementById('set-kegiatan').value = s.kegiatan;
-      document.getElementById('set-tahun').value = s.tahun;
+      document.getElementById('set-kegiatan').value = s.kegiatan || '';
+      document.getElementById('set-tahun').value = s.tahun || '';
       document.getElementById('set-prefix').value = s.prefix || '';
-      document.getElementById('set-kapasitas').value = s.kapasitas;
-      document.getElementById('set-kepsek').value = s.kepsek;
-      document.getElementById('set-nip-kepsek').value = s.nipKepsek;
-      document.getElementById('set-ketua').value = s.ketua;
-      document.getElementById('set-nip-ketua').value = s.nipKetua;
-      document.getElementById('set-kop1').value = s.kop1;
-      document.getElementById('set-kop2').value = s.kop2;
-      document.getElementById('set-kop3').value = s.kop3;
-      document.getElementById('set-kop4').value = s.kop4;
-      document.getElementById('set-kop5').value = s.kop5;
+      document.getElementById('set-kapasitas').value = s.kapasitas || 20;
+      document.getElementById('set-kepsek').value = s.kepsek || '';
+      document.getElementById('set-nip-kepsek').value = s.nipKepsek || '';
+      document.getElementById('set-ketua').value = s.ketua || '';
+      document.getElementById('set-nip-ketua').value = s.nipKetua || '';
+      document.getElementById('set-kop1').value = s.kop1 || '';
+      document.getElementById('set-kop2').value = s.kop2 || '';
+      document.getElementById('set-kop3').value = s.kop3 || '';
+      document.getElementById('set-kop4').value = s.kop4 || '';
+      document.getElementById('set-kop5').value = s.kop5 || '';
 
       // Tables
       let tSiswa = '';
@@ -426,6 +464,19 @@
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     
+    // Auto-Numbering Siswa
+    function openModalSiswa() {
+      let lastNis = 0;
+      db.siswa.forEach(s => {
+        let num = parseInt(s.nis.replace(/[^0-9]/g, ''));
+        if(!isNaN(num) && num > lastNis) lastNis = num;
+      });
+      document.getElementById('in-nis').value = String(lastNis + 1).padStart(3, '0');
+      document.getElementById('in-nama').value = '';
+      document.getElementById('in-kelas').value = '';
+      openModal('modal-siswa');
+    }
+
     function saveSiswa() {
       let nis = document.getElementById('in-nis').value, nama = document.getElementById('in-nama').value, kls = document.getElementById('in-kelas').value;
       if(!nis || !nama) return alert('Lengkapi data!');
@@ -442,8 +493,35 @@
     }
     function delPanitia(i) { if(confirm('Hapus?')){ db.panitia.splice(i,1); saveDB(); } }
 
+    // Import Excel (SheetJS)
+    function importExcel(e) {
+      let file = e.target.files[0];
+      if(!file) return;
+      let reader = new FileReader();
+      reader.onload = function(evt) {
+        let data = new Uint8Array(evt.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        let excelRows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+        
+        let imported = 0;
+        // Skip baris 1 asumsi Header
+        for(let i=1; i<excelRows.length; i++) {
+          let row = excelRows[i];
+          if(row[0] && row[1]) {
+            db.siswa.push({nis: String(row[0]), nama: String(row[1]), kelas: String(row[2]||'-'), ruang:''});
+            imported++;
+          }
+        }
+        saveDB();
+        document.getElementById('file-import').value = ''; // reset input
+        Swal.fire('Berhasil', imported + ' data siswa berhasil diimpor', 'success');
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     // BAGI RUANG LOGIC
-    function setModeRuang() { /* trigger UI if needed */ renderRuangCustom(); }
+    function setModeRuang() { renderRuangCustom(); }
     function renderRuangCustom() {
       let c = document.getElementById('ruang-container'); c.innerHTML = '';
       let k = db.settings.kapasitas || 20;
@@ -527,7 +605,7 @@
       document.getElementById('nav-'+id).classList.add('active');
     }
 
-    // BACKUP RESTORE CLOUD
+    // BACKUP RESTORE CLOUD (Tulis Langsung ke Sheet)
     function backupData() {
       let a = document.createElement('a');
       a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
@@ -538,77 +616,25 @@
       r.onload = ev => { db = JSON.parse(ev.target.result); saveDB(); Swal.fire('OK','Data dipulihkan','success'); };
       r.readAsText(e.target.files[0]);
     }
+
     function syncToCloud() {
-      Swal.fire({title:'Menyinkronkan...', didOpen:()=>Swal.showLoading()});
-      fetch(API_URL, { method: 'POST', body: new URLSearchParams({action:'backup', data:JSON.stringify(db)}) })
-        .then(()=>Swal.fire('Berhasil','Data tersinkron ke Google Sheets','success'))
-        .catch(()=>Swal.fire('Error','Gagal terhubung ke Cloud. Pastikan koneksi internet aktif.','error'));
+      Swal.fire({title:'Menyinkronkan ke Cloud...', text:'Menulis data langsung ke Spreadsheet...', didOpen:()=>Swal.showLoading()});
+      // Buat form payload
+      let payload = new URLSearchParams();
+      payload.append('action', 'saveData');
+      payload.append('data', JSON.stringify(db));
+
+      fetch(API_URL, { method: 'POST', body: payload })
+        .then(res => res.json())
+        .then(res => {
+          if(res.success) {
+            Swal.fire('Berhasil','Data database tersinkron dengan Sheet Settings, Siswa, dan Panitia!','success');
+          } else {
+            Swal.fire('Error', res.message, 'error');
+          }
+        })
+        .catch(()=>Swal.fire('Error','Gagal terhubung ke Cloud. Pastikan internet aktif.','error'));
     }
   </script>
 </body>
 </html>
-```
-
-### 2. File Backend - Apps Script (`Code.gs`)
-Salin *code* di bawah ini ke file `Code.gs` di Editor Google Apps Script Anda. Fungsi ini memungkinkan SIPU mem-backup JSON utuh dari aplikasi ke Spreadsheets.
-```javascript:Backend:Code.gs
-function doGet(e) {
-  return ContentService.createTextOutput("API SIPU Aktif dan Siap Digunakan.")
-    .setMimeType(ContentService.MimeType.TEXT);
-}
-
-function doPost(e) {
-  try {
-    const action = e.parameter.action;
-    const data = e.parameter.data;
-    
-    if (action === 'backup') {
-      const sheet = getSpreadsheet().getSheetByName(CONFIG.SHEETS.BACKUP);
-      if(!sheet) return errorResponse("Sheet Backup tidak ditemukan");
-      
-      // Simpan backup JSON lengkap berserta Timestamp
-      sheet.appendRow([new Date(), data]);
-      return successResponse("Backup berhasil disimpan ke Cloud.");
-    }
-    
-    return errorResponse("Perintah tidak dikenali.");
-  } catch(error) {
-    return errorResponse(error.toString());
-  }
-}
-
-function successResponse(msg) {
-  return ContentService.createTextOutput(JSON.stringify({success: true, message: msg}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function errorResponse(msg) {
-  return ContentService.createTextOutput(JSON.stringify({success: false, message: msg}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-```
-
-### 3. File Konfigurasi Apps Script (`Config.gs`)
-Salin ini ke file `Config.gs`. **Penting:** Pastikan di Spreadsheet Anda, Anda telah membuat Sheet (Tab di bawah) bernama **"BackupData"**.
-
-```javascript:Backend:Config.gs
-// Config.gs
-const CONFIG = {
-  // MASUKKAN ID SPREADSHEET ANDA DI SINI
-  SPREADSHEET_ID: 'MASUKKAN_ID_SPREADSHEET_ANDA_DI_SINI',
-  SHEETS: {
-    BACKUP: 'BackupData' // Buat tab sheet dengan nama BackupData
-  }
-};
-
-function getSpreadsheet() {
-  return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-}
-```
-
-**Ringkasan Pembaruan yang Telah Dilakukan:**
-1. **Tidak Ada Data Dummy:** Saat Anda log-in (`admin` / `admin`), data murni kosong dan siap untuk diinput.
-2. **Kop Surat Dinamis 4-5 Baris:** Sudah terpasang aturan jika baris 4 dan 5 kosong, maka struktur HTML tidak akan menggambar elemen tersebut, dan tinggi (height) menyesuaikan secara otomatis. Terdapat 2 *upload input* untuk logo Kiri dan Kanan.
-3. **Cetak F4 (10 Kartu per Lembar):** Menggunakan ukuran 215,9 mm × 330,2 mm dengan *layout* matriks 2x5.
-4. **Pembagian Ruang 3 Mode:** Telah ditambahkan pilihan mode, integrasi drag & drop, otomatis hitung kebutuhan ruang, dan urutan gabung ruang acak.
-5. **Integrasi Script Cloud:** Tombol sinkronisasi disertakan di menu kiri bawah. Mode operasional harian berjalan 100% *Offline* (sesuai janji SIPU pada poster penawaran Anda). Saat koneksi tersedia, cukup klik "Sync Ke Cloud".
