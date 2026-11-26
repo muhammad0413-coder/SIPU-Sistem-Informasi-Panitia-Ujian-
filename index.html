@@ -16,13 +16,13 @@
 
     /* PRINT STYLES: KERTAS F4 (215.9mm x 330.2mm) */
     @media print {
-      @page { size: 215.9mm 330.2mm; margin: 6mm; }
-      html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+      @page { size: 215.9mm 330.2mm; margin: 5mm; }
+      html, body { height: auto !important; overflow: visible !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
       #login-section, #app-section, #modal-siswa, #modal-panitia, #modal-preview { display: none !important; }
       #print-area {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr);
-        gap: 3mm 4mm;
+        gap: 3mm 5mm;
         width: 100%;
         background: #fff;
         position: static !important;
@@ -31,14 +31,14 @@
         display: block !important;
       }
 
-      /* Kartu Peserta & Kartu Meja: 10 kartu (5 baris x 2 kolom) pas 1 lembar F4 */
+      /* Kartu Peserta & Kartu Meja: 10 kartu (5 baris x 2 kolom) pas 1 lembar F4 (320.2mm tinggi bersih) */
       .kartu-peserta, .kartu-meja {
         width: 100%; height: 61mm; margin: 0; padding: 2mm 2.5mm;
         box-sizing: border-box; break-inside: avoid; page-break-inside: avoid;
         display: flex; flex-direction: column; justify-content: space-between; background: #fff;
       }
       .kartu-peserta { border: 1.5px dashed #1e3a8a; border-radius: 6px; }
-      .kartu-meja { border: 2px solid #000; }
+      .kartu-meja { border: 1.5px solid #000; }
 
       /* Kartu Panitia: Standar ID Card B2 */
       .kartu-panitia {
@@ -1321,7 +1321,7 @@
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; background:#1e3a8a; color:#fff; padding: 2px 4px; border-radius: 3px; margin-bottom: 4px; -webkit-print-color-adjust:exact;">
-                <p style="font-size:8px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.4px;">KARTU PESERTA • ${db.settings.kegiatan}</p>
+                <p style="font-size:8px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.4px;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
@@ -1368,7 +1368,7 @@
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; padding: 2px 0; border-bottom: 1px solid #000; margin-bottom: 4px;">
-                <p style="font-size:8.5px; font-weight:800; margin:0; text-transform:uppercase;">NOMOR MEJA • ${db.settings.kegiatan}</p>
+                <p style="font-size:8.5px; font-weight:800; margin:0; text-transform:uppercase;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
