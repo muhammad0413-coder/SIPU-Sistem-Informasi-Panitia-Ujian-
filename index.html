@@ -33,7 +33,7 @@
 
       /* Kartu Peserta & Kartu Meja: 10 kartu (5 baris x 2 kolom) pas 1 lembar F4 */
       .kartu-peserta, .kartu-meja {
-        width: 100%; height: 61mm; margin: 0; padding: 2mm 2.5mm;
+        width: 100%; height: 61mm; margin: 0; padding: 1.5mm 2.5mm;
         box-sizing: border-box; break-inside: avoid; page-break-inside: avoid;
         display: flex; flex-direction: column; justify-content: space-between;
         background: #fff !important; color: #000 !important;
@@ -71,7 +71,7 @@
       box-sizing: border-box;
     }
     .preview-f4-sheet .kartu-peserta, .preview-f4-sheet .kartu-meja {
-      width: 96mm; height: 61mm; margin-bottom: 3.5mm; padding: 2mm 2.5mm;
+      width: 96mm; height: 61mm; margin-bottom: 3.5mm; padding: 1.5mm 2.5mm;
       box-sizing: border-box; display: flex; flex-direction: column;
       justify-content: space-between; background: #fff !important; color: #000 !important;
     }
@@ -95,22 +95,22 @@
     /* KOP SURAT & TTD */
     .kop-surat {
       position: relative; text-align: center; border-bottom: 2px double #000;
-      padding-bottom: 3px; margin-bottom: 3px; min-height: 50px;
+      padding-bottom: 3px; margin-bottom: 3px; min-height: 58px;
       display: flex; align-items: center; justify-content: center; color: #000;
     }
-    .kop-logo-kiri { position: absolute; left: 2px; top: 1px; width: 48px; height: 48px; object-fit: contain; }
-    .kop-logo-kanan { position: absolute; right: 2px; top: 1px; width: 48px; height: 48px; object-fit: contain; }
-    .kop-teks { padding: 0 54px; line-height: 1.12; color: #000; }
+    .kop-logo-kiri { position: absolute; left: 2px; top: 1px; width: 54px; height: 54px; object-fit: fill; }
+    .kop-logo-kanan { position: absolute; right: 2px; top: 1px; width: 54px; height: 54px; object-fit: fill; }
+    .kop-teks { padding: 0 58px; line-height: 1.06; color: #000; }
     .kop-teks p { margin: 0; color: #000; }
 
     .kop-surat-besar {
       position: relative; text-align: center; border-bottom: 3px double #000;
-      padding-bottom: 8px; margin-bottom: 12px; min-height: 76px;
+      padding-bottom: 8px; margin-bottom: 12px; min-height: 78px;
       display: flex; align-items: center; justify-content: center; color: #000;
     }
-    .kop-surat-besar .kop-logo-kiri { width: 72px; height: 72px; left: 6px; top: 2px; }
-    .kop-surat-besar .kop-logo-kanan { width: 72px; height: 72px; right: 6px; top: 2px; }
-    .kop-surat-besar .kop-teks { padding: 0 88px; line-height: 1.25; }
+    .kop-surat-besar .kop-logo-kiri { width: 74px; height: 74px; left: 6px; top: 2px; object-fit: fill; }
+    .kop-surat-besar .kop-logo-kanan { width: 74px; height: 74px; right: 6px; top: 2px; object-fit: fill; }
+    .kop-surat-besar .kop-teks { padding: 0 90px; line-height: 1.25; }
 
     .ttd-box { position: relative; height: 36px; display: flex; align-items: center; justify-content: flex-start; }
     .ttd-img { max-height: 46px; max-width: 120px; object-fit: contain; position: absolute; left: 2px; top: -6px; pointer-events: none; }
@@ -508,7 +508,7 @@
               <i class="fas fa-id-card text-2xl"></i>
             </div>
             <h3 class="text-lg font-extrabold text-slate-800">Cetak Kartu Peserta & Nomor Meja (Kertas F4)</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,6 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Seluruh tulisan dan kotak ruangan dicetak hitam penuh dan besar.</p>
+            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,6 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Kop surat besar dengan logo kiri & kanan simetris.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-left">
               <div>
@@ -771,24 +771,29 @@
           db = { ...db, ...parsed, settings: { ...db.settings, ...(parsed.settings || {}) } };
         } catch (e) {}
       }
+      normalizeSavedLogos();
       refreshUI();
     }
 
     function saveDB() {
-      localStorage.setItem('sipu_db_v4', JSON.stringify(db));
+      try {
+        localStorage.setItem('sipu_db_v4', JSON.stringify(db));
+      } catch (e) {
+        Swal.fire('Memori Penuh', 'Gunakan gambar logo/TTD berukuran lebih kecil.', 'warning');
+      }
       refreshUI();
     }
 
+    // AUTH & NAVIGATION
     function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value.trim();
-      if (u === 'admin' && p === db.pass) {
+      const p = document.getElementById('password').value;
+      if (u === 'admin' && p === (db.pass || 'admin')) {
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('app-section').classList.remove('hidden');
-        loadDB();
       } else {
-        Swal.fire('Gagal Masuk', 'Username atau Password salah! (Default: admin / admin)', 'error');
+        Swal.fire('Login Gagal', 'Username atau password salah (default: admin / admin)', 'error');
       }
     }
 
@@ -801,32 +806,96 @@
     function gantiPassword(e) {
       e.preventDefault();
       const np = document.getElementById('new-pass').value.trim();
-      if (np) {
-        db.pass = np;
-        saveDB();
-        document.getElementById('new-pass').value = '';
-        Swal.fire('Berhasil', 'Password login diperbarui.', 'success');
-      }
+      if (!np) return;
+      db.pass = np;
+      saveDB();
+      document.getElementById('new-pass').value = '';
+      Swal.fire('Berhasil', 'Password login berhasil diperbarui.', 'success');
     }
 
-    function switchTab(id) {
+    function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + id).classList.remove('hidden');
-      const nav = document.getElementById('nav-' + id);
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+      const nav = document.getElementById(`nav-${tabId}`);
       if (nav) nav.classList.add('active');
-      document.getElementById('header-title').innerText = tabTitles[id] || 'SIPU';
+      document.getElementById('header-title').innerText = tabTitles[tabId] || 'SIPU';
       if (window.innerWidth < 1024) {
         document.getElementById('sidebar').classList.add('-translate-x-full');
         document.getElementById('sidebar-backdrop').classList.add('hidden');
       }
-      refreshUI();
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-    // UPLOAD LOGO & TTD
+    // PEMANGKASAN RUANG KOSONG/TRANSPARAN LOGO OTOMATIS AGAR LOGO KIRI & KANAN SAMA BESAR
+    function trimImageWhitespace(img) {
+      const w = img.width;
+      const h = img.height;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = w;
+      tempCanvas.height = h;
+      const tCtx = tempCanvas.getContext('2d');
+      tCtx.drawImage(img, 0, 0);
+
+      try {
+        const imgData = tCtx.getImageData(0, 0, w, h).data;
+        let top = h, left = w, right = 0, bottom = 0;
+        let hasPixel = false;
+
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
+            const isTransparent = a < 20;
+            const isNearWhite = r > 245 && g > 245 && b > 245;
+            if (!isTransparent && !isNearWhite) {
+              hasPixel = true;
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+              if (x < left) left = x;
+              if (x > right) right = x;
+            }
+          }
+        }
+
+        if (hasPixel && right > left && bottom > top) {
+          const cropW = right - left + 1;
+          const cropH = bottom - top + 1;
+          const croppedCanvas = document.createElement('canvas');
+          croppedCanvas.width = cropW;
+          croppedCanvas.height = cropH;
+          croppedCanvas.getContext('2d').drawImage(tempCanvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
+          return croppedCanvas;
+        }
+      } catch (e) {}
+      return tempCanvas;
+    }
+
+    function normalizeSavedLogos() {
+      ['logoKiri', 'logoKanan'].forEach(key => {
+        const src = db.settings[key];
+        if (!src || !src.startsWith('data:image')) return;
+        const img = new Image();
+        img.onload = function() {
+          const trimmed = trimImageWhitespace(img);
+          const canvas = document.createElement('canvas');
+          canvas.width = 200;
+          canvas.height = 200;
+          canvas.getContext('2d').drawImage(trimmed, 0, 0, 200, 200);
+          const normalized = canvas.toDataURL('image/png');
+          if (normalized !== db.settings[key]) {
+            db.settings[key] = normalized;
+            localStorage.setItem('sipu_db_v4', JSON.stringify(db));
+            loadSettingsToForm();
+          }
+        };
+        img.src = src;
+      });
+    }
+
     function previewUpload(event, key, imgId, btnId) {
       const file = event.target.files[0];
       if (!file) return;
@@ -835,18 +904,24 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const maxW = 240;
-          const scale = Math.min(1, maxW / img.width);
-          canvas.width = img.width * scale;
-          canvas.height = img.height * scale;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          if (key === 'logoKiri' || key === 'logoKanan') {
+            const trimmed = trimImageWhitespace(img);
+            canvas.width = 200;
+            canvas.height = 200;
+            canvas.getContext('2d').drawImage(trimmed, 0, 0, 200, 200);
+          } else {
+            const maxW = 240;
+            const scale = Math.min(1, maxW / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
           const dataUrl = canvas.toDataURL('image/png');
           db.settings[key] = dataUrl;
-          const elImg = document.getElementById(imgId);
-          elImg.src = dataUrl;
-          elImg.classList.remove('hidden');
-          if (btnId) document.getElementById(btnId).classList.remove('hidden');
+          const prev = document.getElementById(imgId);
+          prev.src = dataUrl;
+          prev.classList.remove('hidden');
+          document.getElementById(btnId).classList.remove('hidden');
         };
         img.src = e.target.result;
       };
@@ -855,32 +930,11 @@
 
     function hapusGambar(key, imgId, btnId) {
       db.settings[key] = '';
-      document.getElementById(imgId).classList.add('hidden');
-      if (btnId) document.getElementById(btnId).classList.add('hidden');
+      const prev = document.getElementById(imgId);
+      prev.src = '';
+      prev.classList.add('hidden');
+      document.getElementById(btnId).classList.add('hidden');
       saveDB();
-    }
-
-    function saveSettings() {
-      db.settings.kegiatan = document.getElementById('set-kegiatan').value;
-      db.settings.tahun = document.getElementById('set-tahun').value;
-      db.settings.prefix = document.getElementById('set-prefix').value;
-      db.settings.kapasitas = parseInt(document.getElementById('set-kapasitas').value) || 20;
-      db.settings.kepsek = document.getElementById('set-kepsek').value;
-      db.settings.nipKepsek = document.getElementById('set-nip-kepsek').value;
-      db.settings.ketua = document.getElementById('set-ketua').value;
-      db.settings.nipKetua = document.getElementById('set-nip-ketua').value;
-      db.settings.kop1 = document.getElementById('set-kop1').value;
-      db.settings.kop2 = document.getElementById('set-kop2').value;
-      db.settings.kop3 = document.getElementById('set-kop3').value;
-      db.settings.kop4 = document.getElementById('set-kop4').value;
-      db.settings.kop5 = document.getElementById('set-kop5').value;
-
-      if (db.siswa.length > 0) {
-        const butuh = Math.ceil(db.siswa.length / db.settings.kapasitas);
-        if (butuh > db.totalRuang) db.totalRuang = butuh;
-      }
-      saveDB();
-      Swal.fire('Tersimpan', 'Pengaturan berhasil diperbarui.', 'success');
     }
 
     function loadSettingsToForm() {
@@ -899,36 +953,52 @@
       document.getElementById('set-kop4').value = s.kop4 || '';
       document.getElementById('set-kop5').value = s.kop5 || '';
 
-      if (s.logoKiri) {
-        document.getElementById('prev-logo-kiri').src = s.logoKiri;
-        document.getElementById('prev-logo-kiri').classList.remove('hidden');
-        document.getElementById('btn-del-kiri').classList.remove('hidden');
-      }
-      if (s.logoKanan) {
-        document.getElementById('prev-logo-kanan').src = s.logoKanan;
-        document.getElementById('prev-logo-kanan').classList.remove('hidden');
-        document.getElementById('btn-del-kanan').classList.remove('hidden');
-      }
-      if (s.ttdKepsek) {
-        document.getElementById('prev-ttd-kepsek').src = s.ttdKepsek;
-        document.getElementById('prev-ttd-kepsek').classList.remove('hidden');
-        document.getElementById('btn-del-ttd').classList.remove('hidden');
-      }
+      [
+        ['logoKiri', 'prev-logo-kiri', 'btn-del-kiri'],
+        ['logoKanan', 'prev-logo-kanan', 'btn-del-kanan'],
+        ['ttdKepsek', 'prev-ttd-kepsek', 'btn-del-ttd']
+      ].forEach(([k, imgId, btnId]) => {
+        if (s[k]) {
+          document.getElementById(imgId).src = s[k];
+          document.getElementById(imgId).classList.remove('hidden');
+          document.getElementById(btnId).classList.remove('hidden');
+        }
+      });
     }
 
+    function saveSettings() {
+      const s = db.settings;
+      s.kegiatan = document.getElementById('set-kegiatan').value.trim();
+      s.tahun = document.getElementById('set-tahun').value.trim();
+      s.prefix = document.getElementById('set-prefix').value.trim();
+      s.kapasitas = parseInt(document.getElementById('set-kapasitas').value) || 20;
+      s.kepsek = document.getElementById('set-kepsek').value.trim();
+      s.nipKepsek = document.getElementById('set-nip-kepsek').value.trim();
+      s.ketua = document.getElementById('set-ketua').value.trim();
+      s.nipKetua = document.getElementById('set-nip-ketua').value.trim();
+      s.kop1 = document.getElementById('set-kop1').value.trim();
+      s.kop2 = document.getElementById('set-kop2').value.trim();
+      s.kop3 = document.getElementById('set-kop3').value.trim();
+      s.kop4 = document.getElementById('set-kop4').value.trim();
+      s.kop5 = document.getElementById('set-kop5').value.trim();
+      saveDB();
+      Swal.fire('Tersimpan!', 'Identitas ujian dan kop surat telah diperbarui.', 'success');
+    }
+
+    // KOP SURAT & TTD KEPSEK HELPER
     function buildKopHTML(isBesar = false) {
       const s = db.settings;
       const cls = isBesar ? 'kop-surat-besar' : 'kop-surat';
-      const fTitle = isBesar ? '15px' : '12.5px';
-      const fSub = isBesar ? '12px' : '10.5px';
-      const fSmall = isBesar ? '10px' : '8.5px';
-      const padX = isBesar ? '88px' : '54px';
+      const fTitle = isBesar ? '16.5px' : '15px';
+      const fSub = isBesar ? '13.5px' : '12px';
+      const fSmall = isBesar ? '11px' : '9.5px';
+      const padX = isBesar ? '90px' : '58px';
 
       let html = `<div class="${cls}">`;
       if (s.logoKiri) html += `<img src="${s.logoKiri}" class="kop-logo-kiri">`;
-      html += `<div class="kop-teks" style="padding: 0 ${padX}; line-height: 1.08;">`;
-      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:800; color:#000;">${s.kop1}</p>`;
-      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:800; color:#000;">${s.kop2}</p>`;
+      html += `<div class="kop-teks" style="padding: 0 ${padX}; line-height: 1.06;">`;
+      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:900; color:#000;">${s.kop1}</p>`;
+      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:900; color:#000;">${s.kop2}</p>`;
       if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:900; text-transform:uppercase; color:#000;">${s.kop3}</p>`;
       if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:700; color:#000;">${s.kop4}</p>`;
       if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall}; font-weight:600; color:#000;">${s.kop5}</p>`;
@@ -940,34 +1010,38 @@
 
     function buildTTDKepsekHTML(compact = false) {
       const s = db.settings;
-      const imgTag = s.ttdKepsek ? `<img src="${s.ttdKepsek}" class="ttd-img" style="${compact ? 'max-height:32px; top:-4px;' : ''}">` : '';
+      const fSize = compact ? '9.5px' : '11px';
+      const boxH = compact ? '28px' : '38px';
+      const imgH = compact ? '34px' : '46px';
       return `
-        <div style="font-size:${compact ? '8px' : '11px'}; line-height:1.2; color:#000;">
-          <p>Kepala Sekolah,</p>
-          <div class="ttd-box" style="height:${compact ? '22px' : '38px'};">${imgTag}</div>
-          <p style="font-weight:bold; text-decoration:underline;">${s.kepsek || '....................................'}</p>
-          ${s.nipKepsek ? `<p style="font-size:${compact ? '7px' : '10px'};">NIP. ${s.nipKepsek}</p>` : ''}
+        <div style="font-size:${fSize}; line-height:1.2; text-align:left;">
+          <p style="margin:0;">Mengetahui,</p>
+          <p style="margin:0;">Kepala Sekolah,</p>
+          <div class="ttd-box" style="height:${boxH};">
+            ${s.ttdKepsek ? `<img src="${s.ttdKepsek}" class="ttd-img" style="max-height:${imgH};">` : ''}
+          </div>
+          <p style="margin:0; font-weight:bold; text-decoration:underline;">${s.kepsek || '....................................'}</p>
+          ${s.nipKepsek ? `<p style="margin:0; font-size:${compact ? '8.5px' : '10px'};">NIP. ${s.nipKepsek}</p>` : ''}
         </div>
       `;
     }
 
-    // DATA SISWA
+    // CRUD SISWA
     function generateNextNoPeserta() {
-      const prefix = db.settings.prefix || '';
-      let maxNum = 0;
-      db.siswa.forEach(s => {
-        const match = String(s.nis).match(/(\d+)$/);
-        if (match) {
-          const num = parseInt(match[1], 10);
-          if (num > maxNum) maxNum = num;
-        }
-      });
-      return prefix + String(maxNum + 1).padStart(3, '0');
+      const next = String(db.siswa.length + 1).padStart(3, '0');
+      return `${db.settings.prefix || '2026-04-'}${next}`;
     }
 
     function openModalSiswa(idx = -1) {
       document.getElementById('edit-siswa-idx').value = idx;
-      if (idx >= 0) {
+      if (idx === -1) {
+        document.getElementById('modal-siswa-title').innerText = 'Tambah Data Siswa';
+        document.getElementById('in-sis-nis').value = generateNextNoPeserta();
+        document.getElementById('in-sis-nis-lokal').value = '';
+        document.getElementById('in-sis-nisn').value = '';
+        document.getElementById('in-sis-nama').value = '';
+        document.getElementById('in-sis-kelas').value = '';
+      } else {
         const s = db.siswa[idx];
         document.getElementById('modal-siswa-title').innerText = 'Edit Data Siswa';
         document.getElementById('in-sis-nis').value = s.nis;
@@ -975,13 +1049,6 @@
         document.getElementById('in-sis-nisn').value = s.nisn || '';
         document.getElementById('in-sis-nama').value = s.nama;
         document.getElementById('in-sis-kelas').value = s.kelas;
-      } else {
-        document.getElementById('modal-siswa-title').innerText = 'Tambah Data Siswa';
-        document.getElementById('in-sis-nis').value = generateNextNoPeserta();
-        document.getElementById('in-sis-nis-lokal').value = '';
-        document.getElementById('in-sis-nisn').value = '';
-        document.getElementById('in-sis-nama').value = '';
-        document.getElementById('in-sis-kelas').value = '';
       }
       openModal('modal-siswa');
     }
@@ -995,18 +1062,23 @@
         nisn: document.getElementById('in-sis-nisn').value.trim(),
         nama: document.getElementById('in-sis-nama').value.trim(),
         kelas: document.getElementById('in-sis-kelas').value.trim(),
-        ruang: idx >= 0 ? db.siswa[idx].ruang : 'R.1'
+        ruang: idx >= 0 ? (db.siswa[idx].ruang || 'R.1') : 'R.1'
       };
-      if (idx >= 0) db.siswa[idx] = item;
-      else db.siswa.push(item);
+      if (idx === -1) db.siswa.push(item);
+      else db.siswa[idx] = item;
       saveDB();
       closeModal('modal-siswa');
     }
 
-    function hapusSiswa(idx) { db.siswa.splice(idx, 1); saveDB(); }
+    function hapusSiswa(idx) {
+      Swal.fire({ title: 'Hapus siswa ini?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus' }).then(r => {
+        if (r.isConfirmed) { db.siswa.splice(idx, 1); saveDB(); }
+      });
+    }
+
     function hapusSemuaSiswa() {
       if (!db.siswa.length) return;
-      Swal.fire({ title: 'Hapus semua data siswa?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus' }).then(r => {
+      Swal.fire({ title: 'Hapus SEMUA data siswa?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus Semua' }).then(r => {
         if (r.isConfirmed) { db.siswa = []; saveDB(); }
       });
     }
@@ -1032,11 +1104,11 @@
         tb.innerHTML = slice.map((s, idx) => `
           <tr class="hover:bg-slate-50/80">
             <td class="p-3 text-slate-500">${start + idx + 1}</td>
-            <td class="p-3 font-bold text-slate-900">${s.nis}</td>
+            <td class="p-3 font-bold text-slate-800">${s.nis}</td>
             <td class="p-3 text-xs text-slate-600">${s.nisLokal || '-'} / ${s.nisn || '-'}</td>
             <td class="p-3 font-semibold text-slate-800">${s.nama}</td>
-            <td class="p-3"><span class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md text-xs font-bold">${s.kelas}</span></td>
-            <td class="p-3"><span class="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md text-xs font-bold">${s.ruang || 'R.1'}</span></td>
+            <td class="p-3">${formatKelasTerbilang(s.kelas)}</td>
+            <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md text-xs font-bold">${s.ruang || 'R.1'}</span></td>
             <td class="p-3 text-center space-x-2">
               <button onclick="openModalSiswa(${s.origIdx})" class="text-blue-600 hover:text-blue-800 text-xs"><i class="fas fa-edit"></i></button>
               <button onclick="hapusSiswa(${s.origIdx})" class="text-rose-600 hover:text-rose-800 text-xs"><i class="fas fa-trash"></i></button>
@@ -1346,38 +1418,38 @@
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 3px 4px; border-radius: 3px; margin-bottom: 2px; -webkit-print-color-adjust:exact;">
-                <p style="font-size:12px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:0.2px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
+                <p style="font-size:12.5px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:0.2px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
-              <table style="width:100%; height:100%; font-size:10.5px; line-height:1.12; border-collapse:collapse; color:#000000 !important;">
+              <table style="width:100%; height:100%; font-size:10px; line-height:1.1; border-collapse:collapse; color:#000000 !important;">
                 <tr>
                   <td width="24%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">NAMA</td>
                   <td width="3%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:11.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td colspan="2" style="font-weight:900; font-size:10.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NIS</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td width="41%" style="font-weight:800; font-size:10px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; border-radius:4px; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:15.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NISN</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; font-size:10px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NO UJIAN</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">KELAS</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="font-weight:900; font-size:10px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1394,38 +1466,38 @@
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; padding: 2px 0; border-bottom: 2px solid #000000 !important; margin-bottom: 2px;">
-                <p style="font-size:12.5px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
+                <p style="font-size:13px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
-              <table style="width:100%; height:100%; font-size:11px; line-height:1.12; border-collapse:collapse; color:#000000 !important;">
+              <table style="width:100%; height:100%; font-size:10.5px; line-height:1.1; border-collapse:collapse; color:#000000 !important;">
                 <tr>
                   <td width="24%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">NAMA</td>
                   <td width="3%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:11.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td colspan="2" style="font-weight:900; font-size:11px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NIS</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td width="41%" style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:15.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NISN</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NO UJIAN</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">KELAS</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1737,6 +1809,8 @@
       renderRuang();
       renderJadwal();
     }
+
+    window.addEventListener('DOMContentLoaded', loadDB);
   </script>
 </body>
 </html>
