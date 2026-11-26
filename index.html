@@ -95,8 +95,8 @@
     /* KOP SURAT SIMETRIS (FLEXBOX 3 KOLOM SEJAJAR + LOGO PROPORTIONAL) */
     .kop-surat {
       display: flex; align-items: center; justify-content: space-between; gap: 4px;
-      border-bottom: 2px double #000; padding-bottom: 3px; margin-bottom: 3px;
-      min-height: 56px; color: #000;
+      border-bottom: 2px double #000; padding-top: 4px; padding-bottom: 4px; margin-bottom: 4px;
+      min-height: 58px; color: #000;
     }
     .kop-logo-box {
       width: 54px; height: 54px; flex-shrink: 0;
@@ -112,8 +112,8 @@
 
     .kop-surat-besar {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 12px;
-      min-height: 78px; color: #000;
+      border-bottom: 3px double #000; padding-top: 8px; padding-bottom: 8px; margin-bottom: 12px;
+      min-height: 82px; color: #000;
     }
     .kop-surat-besar .kop-logo-box {
       width: 74px; height: 74px; flex-shrink: 0;
@@ -1439,39 +1439,39 @@
           <div class="kartu-peserta" style="padding: 1.5mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
             <div>
               ${buildKopHTML(false)}
-              <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 3px 4px; border-radius: 3px; margin-bottom: 2px; -webkit-print-color-adjust:exact;">
+              <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 2.5px 4px; border-radius: 3px; margin-bottom: 1px; -webkit-print-color-adjust:exact;">
                 <p style="font-size:12.5px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:0.2px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
-              <table style="width:100%; height:100%; font-size:10px; line-height:1.1; border-collapse:collapse; color:#000000 !important;">
+              <table style="width:100%; height:100%; font-size:11.5px; line-height:1.05; border-collapse:collapse; color:#000000 !important;">
                 <tr>
-                  <td width="24%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">NAMA</td>
-                  <td width="3%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:10.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td width="21%" style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">NAMA</td>
+                  <td width="2.5%" style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">:</td>
+                  <td colspan="2" style="font-weight:900; font-size:12px; text-transform:uppercase; color:#000000 !important; vertical-align:middle; padding:0;">${s.nama}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NIS</td>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:10px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">NIS</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">:</td>
+                  <td width="44.5%" style="font-weight:800; font-size:11.5px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; border-radius:4px; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:15.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NISN</td>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:10px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">NISN</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:800; font-size:11.5px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NO UJIAN</td>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">NO UJIAN</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:900; font-size:12px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nis}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">KELAS</td>
-                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:10px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">KELAS</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:900; font-size:11.5px; color:#000000 !important; vertical-align:middle; padding:0;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1487,39 +1487,39 @@
           <div class="kartu-meja" style="padding: 1.5mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
             <div>
               ${buildKopHTML(false)}
-              <div style="text-align:center; padding: 2px 0; border-bottom: 2px solid #000000 !important; margin-bottom: 2px;">
+              <div style="text-align:center; padding: 1.5px 0; border-bottom: 2px solid #000000 !important; margin-bottom: 1px;">
                 <p style="font-size:13px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
-              <table style="width:100%; height:100%; font-size:10.5px; line-height:1.1; border-collapse:collapse; color:#000000 !important;">
+              <table style="width:100%; height:100%; font-size:12px; line-height:1.05; border-collapse:collapse; color:#000000 !important;">
                 <tr>
-                  <td width="24%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">NAMA</td>
-                  <td width="3%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:11px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td width="21%" style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">NAMA</td>
+                  <td width="2.5%" style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">:</td>
+                  <td colspan="2" style="font-weight:900; font-size:12.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle; padding:0;">${s.nama}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NIS</td>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">NIS</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">:</td>
+                  <td width="44.5%" style="font-weight:800; font-size:12px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:15.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NISN</td>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">NISN</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:800; font-size:12px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NO UJIAN</td>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">NO UJIAN</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:900; font-size:12px; color:#000000 !important; vertical-align:middle; padding:0;">${s.nis}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">KELAS</td>
-                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">KELAS</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle; padding:0;">:</td>
+                  <td style="font-weight:900; font-size:12px; color:#000000 !important; vertical-align:middle; padding:0;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
