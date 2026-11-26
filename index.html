@@ -95,22 +95,22 @@
     /* KOP SURAT & TTD */
     .kop-surat {
       position: relative; text-align: center; border-bottom: 2px double #000;
-      padding-bottom: 2px; margin-bottom: 3px; min-height: 34px;
+      padding-bottom: 3px; margin-bottom: 3px; min-height: 50px;
       display: flex; align-items: center; justify-content: center; color: #000;
     }
-    .kop-logo-kiri { position: absolute; left: 2px; top: 0; width: 32px; height: 32px; object-fit: contain; }
-    .kop-logo-kanan { position: absolute; right: 2px; top: 0; width: 32px; height: 32px; object-fit: contain; }
-    .kop-teks { padding: 0 36px; line-height: 1.12; color: #000; }
+    .kop-logo-kiri { position: absolute; left: 2px; top: 1px; width: 48px; height: 48px; object-fit: contain; }
+    .kop-logo-kanan { position: absolute; right: 2px; top: 1px; width: 48px; height: 48px; object-fit: contain; }
+    .kop-teks { padding: 0 54px; line-height: 1.12; color: #000; }
     .kop-teks p { margin: 0; color: #000; }
 
     .kop-surat-besar {
       position: relative; text-align: center; border-bottom: 3px double #000;
-      padding-bottom: 8px; margin-bottom: 12px; min-height: 62px;
+      padding-bottom: 8px; margin-bottom: 12px; min-height: 76px;
       display: flex; align-items: center; justify-content: center; color: #000;
     }
-    .kop-surat-besar .kop-logo-kiri { width: 58px; height: 58px; left: 8px; }
-    .kop-surat-besar .kop-logo-kanan { width: 58px; height: 58px; right: 8px; }
-    .kop-surat-besar .kop-teks { padding: 0 75px; line-height: 1.25; }
+    .kop-surat-besar .kop-logo-kiri { width: 72px; height: 72px; left: 6px; top: 2px; }
+    .kop-surat-besar .kop-logo-kanan { width: 72px; height: 72px; right: 6px; top: 2px; }
+    .kop-surat-besar .kop-teks { padding: 0 88px; line-height: 1.25; }
 
     .ttd-box { position: relative; height: 36px; display: flex; align-items: center; justify-content: flex-start; }
     .ttd-img { max-height: 46px; max-width: 120px; object-fit: contain; position: absolute; left: 2px; top: -6px; pointer-events: none; }
@@ -919,18 +919,19 @@
     function buildKopHTML(isBesar = false) {
       const s = db.settings;
       const cls = isBesar ? 'kop-surat-besar' : 'kop-surat';
-      const fTitle = isBesar ? '14px' : '9.5px';
-      const fSub = isBesar ? '11.5px' : '7.5px';
-      const fSmall = isBesar ? '9.5px' : '6.5px';
+      const fTitle = isBesar ? '15px' : '12.5px';
+      const fSub = isBesar ? '12px' : '10.5px';
+      const fSmall = isBesar ? '10px' : '8.5px';
+      const padX = isBesar ? '88px' : '54px';
 
       let html = `<div class="${cls}">`;
       if (s.logoKiri) html += `<img src="${s.logoKiri}" class="kop-logo-kiri">`;
-      html += `<div class="kop-teks">`;
-      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:700; color:#000;">${s.kop1}</p>`;
-      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:700; color:#000;">${s.kop2}</p>`;
-      if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:800; text-transform:uppercase; color:#000;">${s.kop3}</p>`;
-      if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:600; color:#000;">${s.kop4}</p>`;
-      if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall}; color:#000;">${s.kop5}</p>`;
+      html += `<div class="kop-teks" style="padding: 0 ${padX}; line-height: 1.08;">`;
+      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:800; color:#000;">${s.kop1}</p>`;
+      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:800; color:#000;">${s.kop2}</p>`;
+      if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:900; text-transform:uppercase; color:#000;">${s.kop3}</p>`;
+      if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:700; color:#000;">${s.kop4}</p>`;
+      if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall}; font-weight:600; color:#000;">${s.kop5}</p>`;
       html += `</div>`;
       if (s.logoKanan) html += `<img src="${s.logoKanan}" class="kop-logo-kanan">`;
       html += `</div>`;
@@ -1296,26 +1297,14 @@
         <tr class="hover:bg-slate-50/80">
           <td class="p-3 font-medium">${j.hari}</td>
           <td class="p-3 text-xs">${j.sesi}</td>
-          <td class="p-3 font-semibold text-slate-800">${j.mapel}</td>
+          <td class="p-3 font-bold text-slate-800">${j.mapel}</td>
           <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md text-xs font-bold">${j.ruang}</span></td>
-          <td class="p-3 font-medium">${j.pengawas}</td>
+          <td class="p-3 font-semibold text-slate-700">${j.pengawas}</td>
         </tr>
       `).join('');
     }
 
-    // PREVIEW & PRINT SYSTEM
-    function openPreviewModal(title, htmlContent) {
-      document.getElementById('preview-title').innerText = title;
-      document.getElementById('preview-content').innerHTML = htmlContent;
-      document.getElementById('print-area').innerHTML = htmlContent;
-      openModal('modal-preview');
-    }
-
-    function executePrint() {
-      window.print();
-    }
-
-    // Helper Konversi Kelas Romawi (I - VI) menjadi "I (Satu)" dst.
+    // FORMAT ROMAWI KE TERBILANG (I (Satu) - VI (Enam))
     function formatKelasTerbilang(kelasRaw) {
       const k = String(kelasRaw || '').trim().toUpperCase();
       const mapRomawi = {
@@ -1329,54 +1318,66 @@
       return mapRomawi[k] || String(kelasRaw || '').trim();
     }
 
+    // PREVIEW & PRINT ENGINE
+    function openPreviewModal(title, htmlContent) {
+      document.getElementById('preview-title').innerText = title;
+      document.getElementById('preview-content').innerHTML = htmlContent;
+      document.getElementById('print-area').innerHTML = htmlContent;
+      openModal('modal-preview');
+    }
+
+    function executePrint() {
+      window.print();
+    }
+
     function previewKartuPeserta() {
       const jenis = document.getElementById('filter-jenis-kartu').value;
       const fr = document.getElementById('filter-cetak-ruang').value;
       const fk = document.getElementById('filter-cetak-kelas').value;
       const list = db.siswa.filter(s => (fr === 'ALL' || (s.ruang || 'R.1') === fr) && (fk === 'ALL' || s.kelas === fk));
-      if (!list.length) return Swal.fire('Data Kosong', 'Tidak ada peserta sesuai filter yang dipilih.', 'warning');
+      if (!list.length) return Swal.fire('Data Kosong', 'Tidak ada siswa yang sesuai filter cetak.', 'warning');
 
-      // KARTU DIPEGANG PESERTA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
+      // KARTU DIPEGANG PESERTA (Kop & Judul lebih besar dari data di bawahnya)
       const buildKartuPeserta = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         const teksKelas = formatKelasTerbilang(s.kelas);
         return `
-          <div class="kartu-peserta" style="padding: 2mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
+          <div class="kartu-peserta" style="padding: 1.5mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 3px 4px; border-radius: 3px; margin-bottom: 2px; -webkit-print-color-adjust:exact;">
-                <p style="font-size:9.5px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.3px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
+                <p style="font-size:12px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing:0.2px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
-            <div style="flex:1; display:flex; align-items:stretch; padding-top: 2px;">
-              <table style="width:100%; height:100%; font-size:13.5px; line-height:1.18; border-collapse:collapse; color:#000000 !important;">
+            <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
+              <table style="width:100%; height:100%; font-size:10.5px; line-height:1.12; border-collapse:collapse; color:#000000 !important;">
                 <tr>
                   <td width="24%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">NAMA</td>
                   <td width="3%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:15px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td colspan="2" style="font-weight:900; font-size:11.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NIS</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td width="41%" style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; border-radius:4px; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:17.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NISN</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NO UJIAN</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">KELAS</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="font-weight:900; font-size:10.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1384,47 +1385,47 @@
         `;
       };
 
-      // KARTU DITEMPEL DI MEJA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
+      // KARTU DITEMPEL DI MEJA (Kop & Judul lebih besar dari data di bawahnya)
       const buildKartuMeja = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         const teksKelas = formatKelasTerbilang(s.kelas);
         return `
-          <div class="kartu-meja" style="padding: 2mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
+          <div class="kartu-meja" style="padding: 1.5mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; padding: 2px 0; border-bottom: 2px solid #000000 !important; margin-bottom: 2px;">
-                <p style="font-size:10px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
+                <p style="font-size:12.5px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
-            <div style="flex:1; display:flex; align-items:stretch; padding-top: 2px;">
-              <table style="width:100%; height:100%; font-size:14px; line-height:1.16; border-collapse:collapse; color:#000000 !important;">
+            <div style="flex:1; display:flex; align-items:stretch; padding-top: 1px;">
+              <table style="width:100%; height:100%; font-size:11px; line-height:1.12; border-collapse:collapse; color:#000000 !important;">
                 <tr>
                   <td width="24%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">NAMA</td>
                   <td width="3%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:15.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
+                  <td colspan="2" style="font-weight:900; font-size:11.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NIS</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td width="41%" style="font-weight:800; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td width="41%" style="font-weight:800; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
                   <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:18px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                    <span style="font-size:16px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NISN</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NO UJIAN</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:14.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">KELAS</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
+                  <td style="font-weight:900; font-size:11px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
