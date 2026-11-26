@@ -93,17 +93,24 @@
     .preview-f4-sheet .meja-box { border: 1.5px solid #000; padding: 6px; text-align: center; border-radius: 4px; font-size: 10.5px; }
 
     /* KOP SURAT SIMETRIS (FLEXBOX 3 KOLOM SEJAJAR + LOGO PROPORTIONAL) */
+    :root {
+      --logo-kartu-size: 54px;
+      --logo-doc-size: 74px;
+      --logo-offset-x: 0px;
+      --logo-offset-y: 0px;
+    }
     .kop-surat {
       display: flex; align-items: center; justify-content: space-between; gap: 4px;
       border-bottom: 2px double #000; padding-top: 4px; padding-bottom: 4px; margin-bottom: 4px;
-      min-height: 58px; color: #000;
+      min-height: calc(var(--logo-kartu-size) + 4px); color: #000;
     }
     .kop-logo-box {
-      width: 54px; height: 54px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+      width: var(--logo-kartu-size); height: var(--logo-kartu-size); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .kop-logo-box img {
       width: 100%; height: 100%; object-fit: contain; display: block;
+      transform: translate(var(--logo-offset-x), var(--logo-offset-y));
     }
     .kop-teks {
       flex: 1; text-align: center; line-height: 1.06; color: #000;
@@ -113,14 +120,15 @@
     .kop-surat-besar {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       border-bottom: 3px double #000; padding-top: 8px; padding-bottom: 8px; margin-bottom: 12px;
-      min-height: 82px; color: #000;
+      min-height: calc(var(--logo-doc-size) + 8px); color: #000;
     }
     .kop-surat-besar .kop-logo-box {
-      width: 74px; height: 74px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+      width: var(--logo-doc-size); height: var(--logo-doc-size); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
     .kop-surat-besar .kop-logo-box img {
       width: 100%; height: 100%; object-fit: contain; display: block;
+      transform: translate(var(--logo-offset-x), var(--logo-offset-y));
     }
     .kop-surat-besar .kop-teks {
       flex: 1; text-align: center; line-height: 1.25;
@@ -348,6 +356,35 @@
                     <div class="flex items-center space-x-2 mt-2">
                       <img id="prev-logo-kanan" src="" class="h-12 w-12 object-contain bg-white border rounded-lg p-1 hidden">
                       <button type="button" onclick="hapusGambar('logoKanan', 'prev-logo-kanan', 'btn-del-kanan')" id="btn-del-kanan" class="text-xs text-rose-600 hover:underline hidden">Hapus</button>
+                    </div>
+                  </div>
+                  <div class="col-span-2 pt-3 border-t border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <label class="text-xs font-bold text-blue-800"><i class="fas fa-sliders-h mr-1"></i> Atur Ukuran & Posisi Logo (Otomatis Berlaku ke Semua Kartu & Dokumen)</label>
+                      <button type="button" onclick="resetLogoStyle()" class="text-[11px] font-semibold text-slate-500 hover:text-blue-600 underline">Reset Default</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                          <span>Ukuran Logo</span>
+                          <span id="val-logo-size">54 px</span>
+                        </div>
+                        <input type="range" id="set-logo-size" min="36" max="76" value="54" oninput="applyLogoStyle()" class="w-full accent-blue-600">
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                          <span>Geser Kiri/Kanan</span>
+                          <span id="val-logo-x">0 px</span>
+                        </div>
+                        <input type="range" id="set-logo-x" min="-15" max="15" value="0" oninput="applyLogoStyle()" class="w-full accent-blue-600">
+                      </div>
+                      <div>
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                          <span>Geser Atas/Bawah</span>
+                          <span id="val-logo-y">0 px</span>
+                        </div>
+                        <input type="range" id="set-logo-y" min="-15" max="15" value="0" oninput="applyLogoStyle()" class="w-full accent-blue-600">
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -749,6 +786,9 @@
         kop5: '',
         logoKiri: '',
         logoKanan: '',
+        logoSize: 54,
+        logoOffsetX: 0,
+        logoOffsetY: 0,
         ttdKepsek: ''
       },
       siswa: [],
@@ -975,6 +1015,10 @@
       document.getElementById('set-kop3').value = s.kop3 || '';
       document.getElementById('set-kop4').value = s.kop4 || '';
       document.getElementById('set-kop5').value = s.kop5 || '';
+      document.getElementById('set-logo-size').value = s.logoSize || 54;
+      document.getElementById('set-logo-x').value = s.logoOffsetX || 0;
+      document.getElementById('set-logo-y').value = s.logoOffsetY || 0;
+      applyLogoStyle(false);
 
       [
         ['logoKiri', 'prev-logo-kiri', 'btn-del-kiri'],
@@ -1004,8 +1048,53 @@
       s.kop3 = document.getElementById('set-kop3').value.trim();
       s.kop4 = document.getElementById('set-kop4').value.trim();
       s.kop5 = document.getElementById('set-kop5').value.trim();
+      s.logoSize = parseInt(document.getElementById('set-logo-size').value) || 54;
+      s.logoOffsetX = parseInt(document.getElementById('set-logo-x').value) || 0;
+      s.logoOffsetY = parseInt(document.getElementById('set-logo-y').value) || 0;
+      applyLogoStyle(false);
       saveDB();
       Swal.fire('Tersimpan!', 'Identitas ujian dan kop surat telah diperbarui.', 'success');
+    }
+
+    function applyLogoStyle(updateDb = true) {
+      const size = parseInt(document.getElementById('set-logo-size')?.value || db.settings.logoSize || 54);
+      const offX = parseInt(document.getElementById('set-logo-x')?.value || db.settings.logoOffsetX || 0);
+      const offY = parseInt(document.getElementById('set-logo-y')?.value || db.settings.logoOffsetY || 0);
+
+      document.documentElement.style.setProperty('--logo-kartu-size', `${size}px`);
+      document.documentElement.style.setProperty('--logo-doc-size', `${size + 20}px`);
+      document.documentElement.style.setProperty('--logo-offset-x', `${offX}px`);
+      document.documentElement.style.setProperty('--logo-offset-y', `${offY}px`);
+
+      if (document.getElementById('val-logo-size')) document.getElementById('val-logo-size').innerText = `${size} px`;
+      if (document.getElementById('val-logo-x')) document.getElementById('val-logo-x').innerText = `${offX} px`;
+      if (document.getElementById('val-logo-y')) document.getElementById('val-logo-y').innerText = `${offY} px`;
+
+      const prevKiri = document.getElementById('prev-logo-kiri');
+      const prevKanan = document.getElementById('prev-logo-kanan');
+      if (prevKiri) {
+        prevKiri.style.width = `${size}px`;
+        prevKiri.style.height = `${size}px`;
+        prevKiri.style.transform = `translate(${offX}px, ${offY}px)`;
+      }
+      if (prevKanan) {
+        prevKanan.style.width = `${size}px`;
+        prevKanan.style.height = `${size}px`;
+        prevKanan.style.transform = `translate(${offX}px, ${offY}px)`;
+      }
+
+      if (updateDb) {
+        db.settings.logoSize = size;
+        db.settings.logoOffsetX = offX;
+        db.settings.logoOffsetY = offY;
+      }
+    }
+
+    function resetLogoStyle() {
+      document.getElementById('set-logo-size').value = 54;
+      document.getElementById('set-logo-x').value = 0;
+      document.getElementById('set-logo-y').value = 0;
+      applyLogoStyle(true);
     }
 
     // KOP SURAT SIMETRIS & TTD KEPSEK HELPER
