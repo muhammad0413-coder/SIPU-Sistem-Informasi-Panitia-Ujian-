@@ -353,7 +353,8 @@
               <thead>
                 <tr class="bg-gray-100 text-gray-700 border-b">
                   <th class="p-3">No</th>
-                  <th class="p-3">No Peserta</th>
+                  <th class="p-3">No Ujian</th>
+                  <th class="p-3">NIS / NISN</th>
                   <th class="p-3">Nama Lengkap</th>
                   <th class="p-3">Kelas</th>
                   <th class="p-3">Ruang</th>
@@ -622,8 +623,18 @@
       <form onsubmit="saveSiswa(event)" class="space-y-3">
         <input type="hidden" id="edit-siswa-idx" value="-1">
         <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Nomor Peserta (Otomatis)</label>
+          <label class="block text-xs font-bold text-gray-600 mb-1">Nomor Ujian / Peserta (Otomatis)</label>
           <input type="text" id="in-sis-nis" class="w-full border rounded-lg p-2 text-sm bg-gray-50 font-semibold" required>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">NIS</label>
+            <input type="text" id="in-sis-nis-lokal" class="w-full border rounded-lg p-2 text-sm" placeholder="Contoh: 5568">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">NISN</label>
+            <input type="text" id="in-sis-nisn" class="w-full border rounded-lg p-2 text-sm" placeholder="Contoh: 0132057039">
+          </div>
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-600 mb-1">Nama Lengkap Siswa</label>
@@ -631,7 +642,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-gray-600 mb-1">Kelas</label>
-          <input type="text" id="in-sis-kelas" class="w-full border rounded-lg p-2 text-sm" placeholder="Contoh: X-A / VII-1" required>
+          <input type="text" id="in-sis-kelas" class="w-full border rounded-lg p-2 text-sm" placeholder="Contoh: VI / X-A" required>
         </div>
         <div class="flex justify-end space-x-2 pt-3 border-t">
           <button type="button" onclick="closeModal('modal-siswa')" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
@@ -941,11 +952,15 @@
         const s = db.siswa[idx];
         document.getElementById('modal-siswa-title').innerText = 'Edit Data Siswa';
         document.getElementById('in-sis-nis').value = s.nis;
+        document.getElementById('in-sis-nis-lokal').value = s.nisLokal || '';
+        document.getElementById('in-sis-nisn').value = s.nisn || '';
         document.getElementById('in-sis-nama').value = s.nama;
         document.getElementById('in-sis-kelas').value = s.kelas;
       } else {
         document.getElementById('modal-siswa-title').innerText = 'Tambah Data Siswa';
         document.getElementById('in-sis-nis').value = generateNextNoPeserta();
+        document.getElementById('in-sis-nis-lokal').value = '';
+        document.getElementById('in-sis-nisn').value = '';
         document.getElementById('in-sis-nama').value = '';
         document.getElementById('in-sis-kelas').value = '';
       }
@@ -957,6 +972,8 @@
       const idx = parseInt(document.getElementById('edit-siswa-idx').value);
       const item = {
         nis: document.getElementById('in-sis-nis').value.trim(),
+        nisLokal: document.getElementById('in-sis-nis-lokal').value.trim(),
+        nisn: document.getElementById('in-sis-nisn').value.trim(),
         nama: document.getElementById('in-sis-nama').value.trim(),
         kelas: document.getElementById('in-sis-kelas').value.trim(),
         ruang: idx >= 0 ? db.siswa[idx].ruang : ''
@@ -983,7 +1000,7 @@
       const q = (document.getElementById('search-siswa')?.value || '').toLowerCase();
       const fk = document.getElementById('filter-kelas-siswa')?.value || 'ALL';
       const filtered = db.siswa.map((s, i) => ({ ...s, origIdx: i })).filter(s => {
-        const matchQ = s.nama.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q);
+        const matchQ = s.nama.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q) || (s.nisLokal || '').toLowerCase().includes(q) || (s.nisn || '').toLowerCase().includes(q);
         const matchK = fk === 'ALL' || s.kelas === fk;
         return matchQ && matchK;
       });
@@ -995,13 +1012,14 @@
 
       const tb = document.getElementById('tb-siswa');
       if (!slice.length) {
-        tb.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-400">Belum ada data siswa.</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Belum ada data siswa.</td></tr>`;
       } else {
         tb.innerHTML = slice.map((s, idx) => `
           <tr class="border-b hover:bg-gray-50">
             <td class="p-3">${start + idx + 1}</td>
             <td class="p-3 font-semibold text-blue-600">${s.nis}</td>
-            <td class="p-3">${s.nama}</td>
+            <td class="p-3 text-xs text-gray-600">${s.nisLokal || '-'} / ${s.nisn || '-'}</td>
+            <td class="p-3 font-medium">${s.nama}</td>
             <td class="p-3"><span class="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">${s.kelas}</span></td>
             <td class="p-3"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold">${s.ruang || '-'}</span></td>
             <td class="p-3 text-center space-x-2">
@@ -1028,8 +1046,8 @@
       let fname = '';
       if (jenis === 'siswa') {
         rows = [
-          { 'No Peserta': '01-001', 'Nama Lengkap': 'Ahmad Budi Santoso', 'Kelas': 'X-A' },
-          { 'No Peserta': '01-002', 'Nama Lengkap': 'Siti Aminah', 'Kelas': 'X-A' }
+          { 'No Ujian': '2026-04-001', 'NIS': '5568', 'NISN': '0132057039', 'Nama Lengkap': 'RENATA ANISA LAIL KARISMA', 'Kelas': 'VI' },
+          { 'No Ujian': '2026-04-002', 'NIS': '5570', 'NISN': '0134437550', 'Nama Lengkap': 'SULTHAN AL AZKA PRASETYO', 'Kelas': 'VI' }
         ];
         fname = 'Template_Import_Siswa_SIPU.xlsx';
       } else {
@@ -1054,8 +1072,19 @@
         rows.forEach(r => {
           const nama = r['Nama Lengkap'] || r['Nama'] || r['NAMA'];
           const kelas = r['Kelas'] || r['KELAS'] || '-';
-          const nis = r['No Peserta'] || r['NIS'] || generateNextNoPeserta();
-          if (nama) db.siswa.push({ nis: String(nis), nama: String(nama), kelas: String(kelas), ruang: '' });
+          const nis = r['No Ujian'] || r['No Peserta'] || generateNextNoPeserta();
+          const nisLokal = r['NIS'] || '';
+          const nisn = r['NISN'] || '';
+          if (nama) {
+            db.siswa.push({
+              nis: String(nis),
+              nisLokal: String(nisLokal),
+              nisn: String(nisn),
+              nama: String(nama),
+              kelas: String(kelas),
+              ruang: ''
+            });
+          }
         });
         saveDB();
         Swal.fire('Berhasil', `${rows.length} data siswa berhasil diimpor.`, 'success');
@@ -1303,26 +1332,29 @@
           `);
         }
 
-        // Kartu Ditempel di Meja (Nomor sama, tampilan khusus Meja)
+        // Kartu Ditempel di Meja (Sesuai format contoh gambar dengan Kotak Ruang di Kanan)
         if (jenis === 'KEDUANYA' || jenis === 'MEJA') {
+          const nomorRuang = (s.ruang || '-').replace(/^R\./i, '');
           cards.push(`
-            <div class="kartu-meja">
+            <div class="kartu-meja" style="padding: 2mm 2.5mm; border: 1.5px solid #000;">
               <div>
                 ${buildKopHTML(false)}
-                <div style="text-align:center; background:#1e293b; color:#fff; padding:2px; margin-bottom:4px; -webkit-print-color-adjust:exact;">
-                  <p style="font-size:8.5px; font-weight:800; margin:0; letter-spacing:0.8px;">NOMOR MEJA PESERTA UJIAN</p>
+                <div style="text-align:center; padding: 1.5px 0 3px 0; border-bottom: 1px solid #000; margin-bottom: 3px;">
+                  <p style="font-size:8px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.3px;">KARTU UJIAN ${db.settings.kegiatan}</p>
                 </div>
-                <div style="text-align:center; border:1.5px solid #000; padding:3px; margin:3px 0; background:#f8fafc;">
-                  <p style="font-size:7.5px; margin:0; color:#475569; font-weight:700;">NOMOR PESERTA</p>
-                  <p style="font-size:16px; font-weight:900; margin:0; letter-spacing:1px;">${s.nis}</p>
-                </div>
-                <table style="width:100%; font-size:8.5px; line-height:1.2;">
-                  <tr><td width="24%">Nama</td><td width="4%">:</td><td style="font-weight:700;">${s.nama}</td></tr>
-                  <tr><td>Kelas / Ruang</td><td>:</td><td style="font-weight:700;">${s.kelas} / ${s.ruang || '-'}</td></tr>
-                </table>
               </div>
-              <div style="text-align:right; font-size:6.5px; color:#475569; border-top:1px dotted #94a3b8; padding-top:1px;">
-                *Tempelkan di sudut meja ujian
+              <div style="display:flex; justify-content:space-between; align-items:stretch; flex:1; gap:4px;">
+                <table style="width:74%; font-size:7.8px; line-height:1.25; border-collapse:collapse;">
+                  <tr><td width="28%" style="font-weight:600;">NAMA</td><td width="4%">:</td><td style="font-weight:800; text-transform:uppercase;">${s.nama}</td></tr>
+                  <tr><td style="font-weight:600;">NIS</td><td>:</td><td style="font-weight:600;">${s.nisLokal || '-'}</td></tr>
+                  <tr><td style="font-weight:600;">NISN</td><td>:</td><td style="font-weight:600;">${s.nisn || '-'}</td></tr>
+                  <tr><td style="font-weight:600;">NO UJIAN</td><td>:</td><td style="font-weight:800;">${s.nis}</td></tr>
+                  <tr><td style="font-weight:600;">KELAS</td><td>:</td><td style="font-weight:700;">${s.kelas}</td></tr>
+                </table>
+                <div style="width:26%; border:1.5px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2px;">
+                  <p style="font-size:8.5px; font-weight:800; margin:0; line-height:1.1;">RUANG</p>
+                  <p style="font-size:15px; font-weight:900; margin:2px 0 0 0; line-height:1;">${nomorRuang}</p>
+                </div>
               </div>
             </div>
           `);
