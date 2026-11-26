@@ -38,7 +38,7 @@
         display: flex; flex-direction: column; justify-content: space-between;
         background: #fff !important; color: #000 !important;
       }
-      .kartu-peserta { border: 2px dashed #000 !important; border-radius: 6px; }
+      .kartu-peserta { border: 2px solid #000 !important; border-radius: 6px; }
       .kartu-meja { border: 2px solid #000 !important; }
 
       /* Kartu Panitia: Standar ID Card B2 */
@@ -75,7 +75,7 @@
       box-sizing: border-box; display: flex; flex-direction: column;
       justify-content: space-between; background: #fff !important; color: #000 !important;
     }
-    .preview-f4-sheet .kartu-peserta { border: 2px dashed #000 !important; border-radius: 6px; }
+    .preview-f4-sheet .kartu-peserta { border: 2px solid #000 !important; border-radius: 6px; }
     .preview-f4-sheet .kartu-meja { border: 2px solid #000 !important; }
     .preview-f4-sheet .kartu-panitia {
       width: 92mm; height: 95mm; border: 1.5px solid #000; border-radius: 8px;
@@ -84,7 +84,7 @@
     }
     .preview-f4-sheet .doc-admin {
       width: 100%; font-size: 11.5px; padding: 4mm; margin-bottom: 16px;
-      border-bottom: 2px dashed #cbd5e1; background: #fff;
+      border-bottom: 2px solid #cbd5e1; background: #fff;
     }
     .preview-f4-sheet .doc-admin table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     .preview-f4-sheet .doc-admin th, .preview-f4-sheet .doc-admin td { border: 1px solid #000; padding: 5px 7px; text-align: left; }
@@ -1436,7 +1436,7 @@
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         const teksKelas = formatKelasTerbilang(s.kelas);
         return `
-          <div class="kartu-peserta" style="padding: 1.5mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
+          <div class="kartu-peserta" style="padding: 1.5mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
             <div>
               ${buildKopHTML(false)}
               <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 2.5px 4px; border-radius: 3px; margin-bottom: 1px; -webkit-print-color-adjust:exact;">
