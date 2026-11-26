@@ -1315,6 +1315,20 @@
       window.print();
     }
 
+    // Helper Konversi Kelas Romawi (I - VI) menjadi "I (Satu)" dst.
+    function formatKelasTerbilang(kelasRaw) {
+      const k = String(kelasRaw || '').trim().toUpperCase();
+      const mapRomawi = {
+        'I': 'I (Satu)',
+        'II': 'II (Dua)',
+        'III': 'III (Tiga)',
+        'IV': 'IV (Empat)',
+        'V': 'V (Lima)',
+        'VI': 'VI (Enam)'
+      };
+      return mapRomawi[k] || String(kelasRaw || '').trim();
+    }
+
     function previewKartuPeserta() {
       const jenis = document.getElementById('filter-jenis-kartu').value;
       const fr = document.getElementById('filter-cetak-ruang').value;
@@ -1325,6 +1339,7 @@
       // KARTU DIPEGANG PESERTA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
       const buildKartuPeserta = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
+        const teksKelas = formatKelasTerbilang(s.kelas);
         return `
           <div class="kartu-peserta" style="padding: 2mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
             <div>
@@ -1361,7 +1376,7 @@
                 <tr>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">KELAS</td>
                   <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.kelas}</td>
+                  <td style="font-weight:900; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1372,6 +1387,7 @@
       // KARTU DITEMPEL DI MEJA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
       const buildKartuMeja = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
+        const teksKelas = formatKelasTerbilang(s.kelas);
         return `
           <div class="kartu-meja" style="padding: 2mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
             <div>
@@ -1408,7 +1424,7 @@
                 <tr>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">KELAS</td>
                   <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.kelas}</td>
+                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${teksKelas}</td>
                 </tr>
               </table>
             </div>
@@ -1417,181 +1433,259 @@
       };
 
       let cards = [];
-      if (jenis === 'KEDUANYA') {
+      if (jenis === 'KEDUANYA' || jenis === 'PESERTA') {
         list.forEach(s => cards.push(buildKartuPeserta(s)));
-        list.forEach(s => cards.push(buildKartuMeja(s)));
-      } else if (jenis === 'PESERTA') {
-        list.forEach(s => cards.push(buildKartuPeserta(s)));
-      } else if (jenis === 'MEJA') {
+      }
+      if (jenis === 'KEDUANYA' || jenis === 'MEJA') {
         list.forEach(s => cards.push(buildKartuMeja(s)));
       }
-
       openPreviewModal('Pratinjau Kartu Peserta & Nomor Meja (F4 • 10 Kartu/Lembar)', cards.join(''));
     }
 
     function previewKartuPanitia() {
       const fj = document.getElementById('filter-cetak-jabatan').value;
       const list = db.panitia.filter(p => fj === 'ALL' || p.jabatan.toLowerCase().includes(fj.toLowerCase()));
-      if (!list.length) return Swal.fire('Data Kosong', 'Belum ada data panitia/pengawas.', 'warning');
+      if (!list.length) return Swal.fire('Data Kosong', 'Tidak ada data panitia/pengawas sesuai filter.', 'warning');
 
-      let cards = list.map(p => `
+      const cards = list.map(p => `
         <div class="kartu-panitia">
           <div>
             ${buildKopHTML(false)}
-            <div style="text-align:center; background:#000; color:#fff; padding:4px; border-radius:4px; margin:6px 0; -webkit-print-color-adjust:exact;">
-              <p style="font-size:10.5px; font-weight:800; margin:0;">TANDA PENGENAL PANITIA / PENGAWAS</p>
-              <p style="font-size:8px; margin:0;">${db.settings.kegiatan}</p>
+            <div style="text-align:center; background:#581c87; color:#fff; padding:4px; border-radius:4px; margin:4px 0; -webkit-print-color-adjust:exact;">
+              <p style="font-size:10px; font-weight:800; margin:0; text-transform:uppercase;">KARTU ${p.jabatan}</p>
+              <p style="font-size:8px; margin:0;">${db.settings.kegiatan} • TP ${db.settings.tahun}</p>
             </div>
-            <div style="text-align:center; margin-top:10px;">
-              <div style="width:22mm; height:26mm; border:1px solid #000; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:8px; color:#000;">FOTO 3x4</div>
-              <p style="font-size:11.5px; font-weight:800; text-decoration:underline; margin:0; color:#000;">${p.nama}</p>
-              <p style="font-size:8.5px; color:#000; margin:2px 0;">NIP/ID: ${p.nip}</p>
-              <div style="display:inline-block; border:1.5px solid #000; color:#000; font-weight:800; font-size:10px; padding:3px 12px; border-radius:12px; margin-top:4px;">${p.jabatan.toUpperCase()}</div>
-            </div>
+          </div>
+          <div style="text-align:center; padding:8px 4px;">
+            <div style="width:52px; height:64px; border:1px dashed #94a3b8; margin:0 auto 6px auto; display:flex; align-items:center; justify-content:center; font-size:8px; color:#64748b;">FOTO 3x4</div>
+            <p style="font-size:12px; font-weight:800; text-decoration:underline; margin:0;">${p.nama}</p>
+            <p style="font-size:9.5px; color:#475569; margin:2px 0;">NIP/ID: ${p.nip}</p>
+            <span style="display:inline-block; background:#f3e8ff; color:#6b21a8; font-weight:800; font-size:9px; padding:2px 8px; border-radius:99px; margin-top:3px;">${p.jabatan}</span>
           </div>
           <div style="display:flex; justify-content:flex-end;">
             ${buildTTDKepsekHTML(true)}
           </div>
         </div>
       `);
-
-      openPreviewModal('Pratinjau Kartu Panitia & Pengawas (ID Card B2 • F4)', cards.join(''));
+      openPreviewModal('Pratinjau ID Card Panitia & Pengawas (B2)', cards.join(''));
     }
 
     function previewJadwal() {
-      if (!db.jadwal.length) return Swal.fire('Kosong', 'Generate jadwal pengawasan terlebih dahulu.', 'warning');
+      if (!db.jadwal.length) return Swal.fire('Data Kosong', 'Generate jadwal pengawasan terlebih dahulu.', 'warning');
+      const rows = db.jadwal.map((j, i) => `
+        <tr>
+          <td style="text-align:center;">${i + 1}</td>
+          <td>${j.hari}</td>
+          <td>${j.sesi}</td>
+          <td>${j.mapel}</td>
+          <td style="text-align:center; font-weight:bold;">${j.ruang}</td>
+          <td>${j.pengawas}</td>
+          <td style="height:28px;"></td>
+        </tr>
+      `).join('');
+
       const html = `
         <div class="doc-admin">
           ${buildKopHTML(true)}
-          <div style="text-align:center; margin-bottom:10px;">
-            <h3 style="font-size:13px; font-weight:800; margin:0;">JADWAL PENGAWAS RUANG UJIAN</h3>
-            <p style="font-size:11px; margin:0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+          <div style="text-align:center; margin-bottom:12px;">
+            <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; margin:0;">JADWAL PENGAWASAN RUANG UJIAN</h2>
+            <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
           </div>
           <table>
             <thead>
-              <tr><th width="5%">No</th><th width="20%">Hari / Tanggal</th><th width="20%">Sesi / Waktu</th><th width="22%">Mata Pelajaran</th><th width="10%">Ruang</th><th>Nama Pengawas</th></tr>
+              <tr>
+                <th width="5%">No</th>
+                <th width="18%">Hari / Tanggal</th>
+                <th width="18%">Sesi / Waktu</th>
+                <th width="20%">Mata Pelajaran</th>
+                <th width="8%">Ruang</th>
+                <th width="19%">Nama Pengawas</th>
+                <th width="12%">Paraf</th>
+              </tr>
             </thead>
-            <tbody>
-              ${db.jadwal.map((j, i) => `<tr><td style="text-align:center;">${i+1}</td><td>${j.hari}</td><td>${j.sesi}</td><td>${j.mapel}</td><td style="text-align:center; font-weight:bold;">${j.ruang}</td><td>${j.pengawas}</td></tr>`).join('')}
-            </tbody>
+            <tbody>${rows}</tbody>
           </table>
-          <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+          <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
             ${buildTTDKepsekHTML(false)}
+            <div style="font-size:11px; line-height:1.2;">
+              <p>Ketua Panitia Ujian,</p>
+              <div style="height:38px;"></div>
+              <p style="font-weight:bold; text-decoration:underline;">${db.settings.ketua || '....................................'}</p>
+              ${db.settings.nipKetua ? `<p style="font-size:10px;">NIP. ${db.settings.nipKetua}</p>` : ''}
+            </div>
           </div>
         </div>
       `;
-      openPreviewModal('Pratinjau Jadwal Pengawasan Ujian (F4)', html);
+      openPreviewModal('Pratinjau Jadwal Pengawasan (F4)', html);
     }
 
-    function previewAdmin(jenis) {
+    function previewAdmin(tipe) {
       const fr = document.getElementById('filter-admin-ruang').value;
-      let ruangList = [];
+      const ruangList = [];
       if (fr === 'ALL') {
         for (let r = 1; r <= db.totalRuang; r++) ruangList.push(`R.${r}`);
       } else {
         ruangList.push(fr);
       }
 
-      let fullHTML = '';
+      let docs = [];
       ruangList.forEach(rName => {
         const peserta = db.siswa.filter(s => (s.ruang || 'R.1') === rName);
+        if (tipe === 'hadir') {
+          const rows = peserta.length ? peserta.map((s, idx) => `
+            <tr>
+              <td style="text-align:center;">${idx + 1}</td>
+              <td style="text-align:center; font-weight:bold;">${s.nis}</td>
+              <td>${s.nama}</td>
+              <td style="text-align:center;">${formatKelasTerbilang(s.kelas)}</td>
+              <td style="height:26px;">${idx % 2 === 0 ? `${idx + 1}. ................` : ''}</td>
+              <td style="height:26px;">${idx % 2 === 1 ? `${idx + 1}. ................` : ''}</td>
+            </tr>
+          `).join('') : `<tr><td colspan="6" style="text-align:center; padding:16px;">Belum ada peserta di ${rName}</td></tr>`;
 
-        if (jenis === 'hadir') {
-          fullHTML += `
-            <div class="doc-admin">
-              ${buildKopHTML(true)}
-              <div style="text-align:center; margin-bottom:8px;">
-                <h3 style="font-size:13px; font-weight:800; margin:0;">DAFTAR HADIR PESERTA UJIAN</h3>
-                <p style="font-size:11px; margin:0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
-              </div>
-              <p style="font-size:11px; font-weight:bold; margin-bottom:4px;">RUANG UJIAN: ${rName} &nbsp;|&nbsp; HARI/TGL: .................................... &nbsp;|&nbsp; MATA PELAJARAN: ....................................</p>
-              <table>
-                <thead><tr><th width="5%">No</th><th width="18%">No. Ujian</th><th width="35%">Nama Peserta</th><th width="12%">Kelas</th><th colspan="2" width="30%">Tanda Tangan</th></tr></thead>
-                <tbody>
-                  ${peserta.length ? peserta.map((s, i) => `
-                    <tr>
-                      <td style="text-align:center;">${i+1}</td>
-                      <td style="font-weight:bold;">${s.nis}</td>
-                      <td>${s.nama}</td>
-                      <td style="text-align:center;">${s.kelas}</td>
-                      <td width="15%">${i % 2 === 0 ? (i+1) + '.' : ''}</td>
-                      <td width="15%">${i % 2 === 1 ? (i+1) + '.' : ''}</td>
-                    </tr>
-                  `).join('') : '<tr><td colspan="6" style="text-align:center;">Belum ada peserta di ruang ini.</td></tr>'}
-                </tbody>
-              </table>
-              <div style="display:flex; justify-content:space-between; margin-top:18px; font-size:11px;">
-                <div><p>Pengawas Ruang,</p><br><br><p>( ............................................ )</p></div>
-                ${buildTTDKepsekHTML(false)}
-              </div>
-            </div>
-          `;
-        } else if (jenis === 'berita') {
-          fullHTML += `
-            <div class="doc-admin">
-              ${buildKopHTML(true)}
-              <div style="text-align:center; margin-bottom:12px;">
-                <h3 style="font-size:14px; font-weight:800; margin:0; text-decoration:underline;">BERITA ACARA PELAKSANAAN UJIAN</h3>
-                <p style="font-size:11px; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
-              </div>
-              <div style="font-size:12px; line-height:1.7;">
-                <p>Pada hari ini .......................... tanggal ........ bulan .......................... tahun ............, telah diselenggarakan <b>${db.settings.kegiatan}</b> di Ruang Ujian <b>${rName}</b> dari pukul ............ sampai dengan pukul ............ untuk mata pelajaran ....................................................</p>
-                <table style="margin:12px 0;">
-                  <tr><td width="45%">1. Jumlah Peserta Seharusnya</td><td>: <b>${peserta.length}</b> orang</td></tr>
-                  <tr><td>2. Jumlah Peserta yang Hadir</td><td>: .......... orang</td></tr>
-                  <tr><td>3. Jumlah Peserta yang Tidak Hadir</td><td>: .......... orang (Nomor: ....................................................)</td></tr>
-                </table>
-                <p>Catatan selama pelaksanaan ujian berlangsung:</p>
-                <div style="border:1px solid #000; height:65px; padding:6px; margin:6px 0;"></div>
-                <p>Demikian berita acara ini dibuat dengan sesungguhnya untuk dipergunakan sebagaimana mestinya.</p>
-              </div>
-              <div style="display:flex; justify-content:space-between; margin-top:25px; font-size:11px;">
-                <div><p>Pengawas Ruang 1,</p><br><br><br><p>( ............................................ )</p></div>
-                <div><p>Pengawas Ruang 2,</p><br><br><br><p>( ............................................ )</p></div>
-                ${buildTTDKepsekHTML(false)}
-              </div>
-            </div>
-          `;
-        } else if (jenis === 'denah') {
-          fullHTML += `
+          docs.push(`
             <div class="doc-admin">
               ${buildKopHTML(true)}
               <div style="text-align:center; margin-bottom:10px;">
-                <h3 style="font-size:13px; font-weight:800; margin:0;">DENAH TEMPAT DUDUK PESERTA UJIAN - RUANG ${rName}</h3>
-                <p style="font-size:11px; margin:0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; margin:0;">DAFTAR HADIR PESERTA UJIAN</h2>
+                <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
               </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <div style="border:2px solid #000; padding:6px 20px; font-weight:bold; background:#f1f5f9;">PAPAN TULIS</div>
-                <div style="border:2px solid #000; padding:6px 24px; font-weight:bold; background:#fef3c7;">MEJA PENGAWAS</div>
-              </div>
-              <div class="denah-grid">
-                ${peserta.map((s, i) => `
-                  <div class="meja-box">
-                    <p style="font-size:9px; color:#64748b; margin:0;">Meja ${i+1}</p>
-                    <p style="font-weight:800; font-size:11px; margin:2px 0;">${s.nis}</p>
-                    <p style="font-size:9.5px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.nama}</p>
-                    <p style="font-size:8.5px; color:#000; font-weight:bold; margin:0;">${s.kelas}</p>
-                  </div>
-                `).join('')}
-              </div>
-              <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+              <table style="border:none; margin-bottom:8px;">
+                <tr>
+                  <td style="border:none; width:18%; padding:2px;"><strong>Ruang Ujian</strong></td>
+                  <td style="border:none; width:32%; padding:2px;">: <strong>${rName}</strong></td>
+                  <td style="border:none; width:18%; padding:2px;"><strong>Hari / Tanggal</strong></td>
+                  <td style="border:none; width:32%; padding:2px;">: ........................................</td>
+                </tr>
+                <tr>
+                  <td style="border:none; padding:2px;"><strong>Mata Pelajaran</strong></td>
+                  <td style="border:none; padding:2px;">: ........................................</td>
+                  <td style="border:none; padding:2px;"><strong>Pukul / Sesi</strong></td>
+                  <td style="border:none; padding:2px;">: ........................................</td>
+                </tr>
+              </table>
+              <table>
+                <thead>
+                  <tr>
+                    <th width="6%">No</th>
+                    <th width="18%">No. Ujian</th>
+                    <th width="34%">Nama Lengkap Peserta</th>
+                    <th width="14%">Kelas</th>
+                    <th colspan="2" width="28%">Tanda Tangan</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+              <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
                 ${buildTTDKepsekHTML(false)}
+                <div style="font-size:11px; line-height:1.2;">
+                  <p>Pengawas Ruang,</p>
+                  <div style="height:38px;"></div>
+                  <p style="font-weight:bold;">( ................................................ )</p>
+                  <p style="font-size:10px;">NIP. ........................................</p>
+                </div>
               </div>
             </div>
-          `;
+          `);
+        } else if (tipe === 'berita') {
+          docs.push(`
+            <div class="doc-admin">
+              ${buildKopHTML(true)}
+              <div style="text-align:center; margin-bottom:14px;">
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; text-decoration:underline; margin:0;">BERITA ACARA PELAKSANAAN UJIAN</h2>
+                <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+              </div>
+              <p style="line-height:1.7; text-align:justify;">
+                Pada hari ini .......................... tanggal ........ bulan .................... tahun ..............., telah diselenggarakan <strong>${db.settings.kegiatan}</strong> bertempat di <strong>${db.settings.kop3}</strong> pada <strong>Ruang ${rName}</strong> mulai pukul ............ sampai dengan pukul ............ WIB.
+              </p>
+              <table style="margin:12px 0;">
+                <tr><td width="40%">Mata Pelajaran</td><td>: ....................................................................................</td></tr>
+                <tr><td>Jumlah Peserta Seharusnya</td><td>: <strong>${peserta.length}</strong> Peserta</td></tr>
+                <tr><td>Jumlah Peserta Hadir</td><td>: ............ Peserta</td></tr>
+                <tr><td>Jumlah Peserta Tidak Hadir</td><td>: ............ Peserta</td></tr>
+                <tr><td>Nomor Peserta Tidak Hadir</td><td>: ....................................................................................</td></tr>
+              </table>
+              <p style="margin-top:10px;"><strong>Catatan Selama Pelaksanaan Ujian:</strong></p>
+              <div style="border:1px solid #000; height:70px; padding:6px; margin-top:4px;"></div>
+              <p style="margin-top:10px;">Demikian berita acara ini dibuat dengan sesungguhnya untuk dapat dipergunakan sebagaimana mestinya.</p>
+              <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
+                ${buildTTDKepsekHTML(false)}
+                <div style="font-size:11px; line-height:1.2;">
+                  <p>Pengawas Ruang,</p>
+                  <div style="height:38px;"></div>
+                  <p style="font-weight:bold;">( ................................................ )</p>
+                  <p style="font-size:10px;">NIP. ........................................</p>
+                </div>
+              </div>
+            </div>
+          `);
+        } else if (tipe === 'denah') {
+          const boxes = peserta.length ? peserta.map((s, idx) => `
+            <div class="meja-box">
+              <div style="font-weight:800; background:#f1f5f9; border-bottom:1px solid #000; margin:-6px -6px 4px -6px; padding:2px;">MEJA ${idx + 1}</div>
+              <p style="font-weight:800; margin:0; font-size:10px;">${s.nis}</p>
+              <p style="margin:2px 0 0 0; font-size:9.5px; line-height:1.15;">${s.nama}</p>
+              <p style="margin:1px 0 0 0; font-size:8.5px; color:#475569;">${formatKelasTerbilang(s.kelas)}</p>
+            </div>
+          `).join('') : `<p style="grid-column:span 4; text-align:center; padding:20px;">Belum ada peserta di ${rName}</p>`;
+
+          docs.push(`
+            <div class="doc-admin">
+              ${buildKopHTML(true)}
+              <div style="text-align:center; margin-bottom:10px;">
+                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; margin:0;">DENAH TEMPAT DUDUK PESERTA — ${rName}</h2>
+                <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+              </div>
+              <div style="border:2px solid #000; text-align:center; padding:6px; font-weight:800; background:#e2e8f0; margin-bottom:12px;">PAPAN TULIS / MEJA PENGAWAS</div>
+              <div class="denah-grid">${boxes}</div>
+            </div>
+          `);
         }
       });
 
-      const titles = { hadir: 'Daftar Hadir Peserta', berita: 'Berita Acara Ujian', denah: 'Denah Tempat Duduk' };
-      openPreviewModal(`Pratinjau ${titles[jenis]} (Format F4)`, fullHTML);
+      const titleMap = { hadir: 'Daftar Hadir Peserta', berita: 'Berita Acara Ujian', denah: 'Denah Tempat Duduk' };
+      openPreviewModal(`Pratinjau ${titleMap[tipe]} (F4)`, docs.join(''));
     }
 
-    // BACKUP & RESTORE
+    // CLOUD SYNC & BACKUP
+    async function syncToCloud() {
+      Swal.fire({ title: 'Menyimpan ke Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        const fd = new URLSearchParams();
+        fd.append('action', 'saveData');
+        fd.append('data', JSON.stringify(db));
+        const res = await fetch(API_URL, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) Swal.fire('Tersinkronisasi!', json.message, 'success');
+        else Swal.fire('Gagal Sync', json.message, 'error');
+      } catch (err) {
+        Swal.fire('Koneksi Gagal', 'Pastikan Web App Apps Script sudah di-deploy dengan akses Anyone.', 'error');
+      }
+    }
+
+    async function pullFromCloud() {
+      Swal.fire({ title: 'Mengambil data dari Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        const res = await fetch(`${API_URL}?action=getData`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          db = { ...db, ...json.data, settings: { ...db.settings, ...(json.data.settings || {}) } };
+          saveDB();
+          Swal.fire('Berhasil', 'Data terbaru dari Google Sheet berhasil dimuat.', 'success');
+        } else {
+          Swal.fire('Gagal', json.message || 'Data tidak ditemukan.', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Koneksi Gagal', 'Gagal terhubung ke server Google Apps Script.', 'error');
+      }
+    }
+
     function backupJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = `SIPU_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.href = url;
+      a.download = `Backup_SIPU_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
 
@@ -1601,77 +1695,40 @@
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
-          db = JSON.parse(evt.target.result);
+          const parsed = JSON.parse(evt.target.result);
+          db = { ...db, ...parsed };
           saveDB();
-          Swal.fire('Berhasil', 'Database berhasil dipulihkan dari file backup.', 'success');
+          Swal.fire('Berhasil', 'Database JSON berhasil dipulihkan.', 'success');
         } catch (err) {
-          Swal.fire('Error', 'File JSON tidak valid.', 'error');
+          Swal.fire('Format Salah', 'File JSON tidak valid.', 'error');
         }
       };
       reader.readAsText(file);
     }
 
-    // CLOUD SYNC GOOGLE SHEETS
-    async function syncToCloud() {
-      Swal.fire({ title: 'Menyimpan ke Google Sheets...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      try {
-        const formData = new URLSearchParams();
-        formData.append('action', 'saveData');
-        formData.append('data', JSON.stringify(db));
-        const res = await fetch(API_URL, { method: 'POST', body: formData });
-        const json = await res.json();
-        if (json.success) Swal.fire('Tersinkronisasi', json.message, 'success');
-        else Swal.fire('Gagal', json.message, 'error');
-      } catch (err) {
-        Swal.fire('Koneksi Gagal', 'Pastikan internet aktif & URL Apps Script sudah di-deploy.', 'error');
-      }
-    }
-
-    async function pullFromCloud() {
-      Swal.fire({ title: 'Menarik data dari Google Sheets...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      try {
-        const res = await fetch(`${API_URL}?action=getData`);
-        const json = await res.json();
-        if (json.success && json.data) {
-          db.settings = { ...db.settings, ...json.data.settings };
-          db.siswa = json.data.siswa || [];
-          db.panitia = json.data.panitia || [];
-          db.jadwal = json.data.jadwal || [];
-          db.totalRuang = json.data.totalRuang || 1;
-          saveDB();
-          Swal.fire('Berhasil', 'Data terbaru berhasil ditarik dari Google Sheets.', 'success');
-        } else {
-          Swal.fire('Gagal', 'Tidak dapat membaca data dari Sheet.', 'error');
-        }
-      } catch (err) {
-        Swal.fire('Koneksi Gagal', 'Gagal terhubung ke server Apps Script.', 'error');
-      }
-    }
-
+    // REFRESH UI & DROPDOWNS
     function refreshUI() {
       document.getElementById('stat-siswa').innerText = db.siswa.length;
       document.getElementById('stat-ruang').innerText = db.totalRuang;
+      const est = Math.max(1, Math.ceil(db.siswa.length / (parseInt(db.settings.kapasitas) || 20)));
+      document.getElementById('stat-ruang-est').innerText = `Kebutuhan otomatis: ${est} ruang`;
       document.getElementById('stat-panitia').innerText = db.panitia.length;
 
-      const kap = parseInt(db.settings.kapasitas) || 20;
-      const butuh = Math.max(1, Math.ceil(db.siswa.length / kap));
-      document.getElementById('stat-ruang-est').innerText = `Kebutuhan otomatis: ${butuh} ruang`;
-
-      document.getElementById('dash-subtitle').innerText = `${db.settings.kop3 || 'Sekolah'} • Tahun Ajaran ${db.settings.tahun}`;
+      document.getElementById('dash-subtitle').innerText = `${db.settings.kop3 || 'Sekolah'} • TP ${db.settings.tahun}`;
       document.getElementById('dash-nama').innerText = db.settings.kop3 || '-';
       document.getElementById('dash-kegiatan').innerText = db.settings.kegiatan || '-';
       document.getElementById('dash-kepsek').innerText = db.settings.kepsek || '-';
       document.getElementById('dash-ketua').innerText = db.settings.ketua || '-';
 
-      const kelasUnik = [...new Set(db.siswa.map(s => s.kelas))];
-      const optKelas = `<option value="ALL">Semua Kelas</option>` + kelasUnik.map(k => `<option value="${k}">${k}</option>`).join('');
-      if (document.getElementById('filter-kelas-siswa')) document.getElementById('filter-kelas-siswa').innerHTML = optKelas;
-      if (document.getElementById('filter-cetak-kelas')) document.getElementById('filter-cetak-kelas').innerHTML = optKelas;
+      const kelasSet = [...new Set(db.siswa.map(s => s.kelas))].sort();
+      const kelasOpts = `<option value="ALL">Semua Kelas</option>` + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
+      if (document.getElementById('filter-kelas-siswa')) document.getElementById('filter-kelas-siswa').innerHTML = kelasOpts;
+      if (document.getElementById('filter-cetak-kelas')) document.getElementById('filter-cetak-kelas').innerHTML = kelasOpts;
 
-      let optRuang = `<option value="ALL">Semua Ruangan</option>`;
-      for (let r = 1; r <= db.totalRuang; r++) optRuang += `<option value="R.${r}">Ruang ${r} (R.${r})</option>`;
-      if (document.getElementById('filter-cetak-ruang')) document.getElementById('filter-cetak-ruang').innerHTML = optRuang;
-      if (document.getElementById('filter-admin-ruang')) document.getElementById('filter-admin-ruang').innerHTML = optRuang;
+      let ruangOpts = `<option value="ALL">Semua Ruangan (R.1 - R.${db.totalRuang})</option>`;
+      for (let r = 1; r <= db.totalRuang; r++) ruangOpts += `<option value="R.${r}">Ruang ${r} (R.${r})</option>`;
+      if (document.getElementById('filter-cetak-ruang')) document.getElementById('filter-cetak-ruang').innerHTML = ruangOpts;
+      if (document.getElementById('filter-admin-ruang')) document.getElementById('filter-admin-ruang').innerHTML = ruangOpts;
 
       loadSettingsToForm();
       renderSiswa();
