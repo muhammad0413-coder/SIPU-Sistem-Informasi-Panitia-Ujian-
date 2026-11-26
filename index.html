@@ -31,18 +31,19 @@
         display: block !important;
       }
 
-      /* Kartu Peserta & Kartu Meja: 10 kartu (5 baris x 2 kolom) pas 1 lembar F4 (320.2mm tinggi bersih) */
+      /* Kartu Peserta & Kartu Meja: 10 kartu (5 baris x 2 kolom) pas 1 lembar F4 */
       .kartu-peserta, .kartu-meja {
         width: 100%; height: 61mm; margin: 0; padding: 2mm 2.5mm;
         box-sizing: border-box; break-inside: avoid; page-break-inside: avoid;
-        display: flex; flex-direction: column; justify-content: space-between; background: #fff;
+        display: flex; flex-direction: column; justify-content: space-between;
+        background: #fff !important; color: #000 !important;
       }
-      .kartu-peserta { border: 1.5px dashed #000; border-radius: 6px; }
-      .kartu-meja { border: 1.5px solid #000; }
+      .kartu-peserta { border: 2px dashed #000 !important; border-radius: 6px; }
+      .kartu-meja { border: 2px solid #000 !important; }
 
       /* Kartu Panitia: Standar ID Card B2 */
       .kartu-panitia {
-        width: 100%; height: 95mm; border: 1.5px solid #0f172a; border-radius: 8px;
+        width: 100%; height: 95mm; border: 1.5px solid #000; border-radius: 8px;
         margin: 0; padding: 4mm; box-sizing: border-box;
         break-inside: avoid; page-break-inside: avoid; display: flex; flex-direction: column;
         justify-content: space-between; background: #fff;
@@ -70,14 +71,14 @@
       box-sizing: border-box;
     }
     .preview-f4-sheet .kartu-peserta, .preview-f4-sheet .kartu-meja {
-      width: 95mm; height: 61mm; margin-bottom: 3.5mm; padding: 2.5mm;
+      width: 96mm; height: 61mm; margin-bottom: 3.5mm; padding: 2mm 2.5mm;
       box-sizing: border-box; display: flex; flex-direction: column;
-      justify-content: space-between; background: #fff;
+      justify-content: space-between; background: #fff !important; color: #000 !important;
     }
-    .preview-f4-sheet .kartu-peserta { border: 1.5px dashed #000; border-radius: 6px; }
-    .preview-f4-sheet .kartu-meja { border: 2px solid #000; }
+    .preview-f4-sheet .kartu-peserta { border: 2px dashed #000 !important; border-radius: 6px; }
+    .preview-f4-sheet .kartu-meja { border: 2px solid #000 !important; }
     .preview-f4-sheet .kartu-panitia {
-      width: 92mm; height: 95mm; border: 1.5px solid #0f172a; border-radius: 8px;
+      width: 92mm; height: 95mm; border: 1.5px solid #000; border-radius: 8px;
       margin-bottom: 5mm; padding: 4mm; box-sizing: border-box;
       display: flex; flex-direction: column; justify-content: space-between; background: #fff;
     }
@@ -94,18 +95,18 @@
     /* KOP SURAT & TTD */
     .kop-surat {
       position: relative; text-align: center; border-bottom: 2px double #000;
-      padding-bottom: 3px; margin-bottom: 4px; min-height: 36px;
-      display: flex; align-items: center; justify-content: center;
+      padding-bottom: 2px; margin-bottom: 3px; min-height: 34px;
+      display: flex; align-items: center; justify-content: center; color: #000;
     }
-    .kop-logo-kiri { position: absolute; left: 2px; top: 0; width: 34px; height: 34px; object-fit: contain; }
-    .kop-logo-kanan { position: absolute; right: 2px; top: 0; width: 34px; height: 34px; object-fit: contain; }
-    .kop-teks { padding: 0 38px; line-height: 1.15; }
-    .kop-teks p { margin: 0; }
+    .kop-logo-kiri { position: absolute; left: 2px; top: 0; width: 32px; height: 32px; object-fit: contain; }
+    .kop-logo-kanan { position: absolute; right: 2px; top: 0; width: 32px; height: 32px; object-fit: contain; }
+    .kop-teks { padding: 0 36px; line-height: 1.12; color: #000; }
+    .kop-teks p { margin: 0; color: #000; }
 
     .kop-surat-besar {
       position: relative; text-align: center; border-bottom: 3px double #000;
       padding-bottom: 8px; margin-bottom: 12px; min-height: 62px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; color: #000;
     }
     .kop-surat-besar .kop-logo-kiri { width: 58px; height: 58px; left: 8px; }
     .kop-surat-besar .kop-logo-kanan { width: 58px; height: 58px; right: 8px; }
@@ -503,16 +504,16 @@
         <!-- 7. CETAK KARTU PESERTA & MEJA -->
         <div id="tab-cetak-peserta" class="tab-content hidden">
           <div class="bg-white rounded-2xl shadow-xs border border-slate-200/70 p-8 text-center max-w-2xl mx-auto">
-            <div class="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600">
+            <div class="bg-slate-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-900">
               <i class="fas fa-id-card text-2xl"></i>
             </div>
             <h3 class="text-lg font-extrabold text-slate-800">Cetak Kartu Peserta & Nomor Meja (Kertas F4)</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,5 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Tampilan Kartu Peserta (Aksen Biru) & Kartu Meja (Bingkai Tegas) dibedakan otomatis.</p>
+            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,6 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Seluruh tulisan dan kotak ruangan dicetak hitam penuh dan besar.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-left">
               <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Jenis Kartu</label>
-                <select id="filter-jenis-kartu" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold bg-blue-50/40">
+                <select id="filter-jenis-kartu" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold bg-slate-50">
                   <option value="KEDUANYA">Keduanya (Peserta + Meja)</option>
                   <option value="PESERTA">Hanya Kartu Peserta</option>
                   <option value="MEJA">Hanya Nomor Meja</option>
@@ -528,7 +529,7 @@
               </div>
             </div>
 
-            <button onclick="previewKartuPeserta()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/25 transition">
+            <button onclick="previewKartuPeserta()" class="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg transition">
               <i class="fas fa-eye mr-2"></i> Pratinjau & Cetak (F4)
             </button>
           </div>
@@ -925,11 +926,11 @@
       let html = `<div class="${cls}">`;
       if (s.logoKiri) html += `<img src="${s.logoKiri}" class="kop-logo-kiri">`;
       html += `<div class="kop-teks">`;
-      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:700;">${s.kop1}</p>`;
-      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:700;">${s.kop2}</p>`;
-      if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:800; text-transform:uppercase;">${s.kop3}</p>`;
-      if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:600;">${s.kop4}</p>`;
-      if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall};">${s.kop5}</p>`;
+      if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:700; color:#000;">${s.kop1}</p>`;
+      if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:700; color:#000;">${s.kop2}</p>`;
+      if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:800; text-transform:uppercase; color:#000;">${s.kop3}</p>`;
+      if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:600; color:#000;">${s.kop4}</p>`;
+      if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall}; color:#000;">${s.kop5}</p>`;
       html += `</div>`;
       if (s.logoKanan) html += `<img src="${s.logoKanan}" class="kop-logo-kanan">`;
       html += `</div>`;
@@ -940,7 +941,7 @@
       const s = db.settings;
       const imgTag = s.ttdKepsek ? `<img src="${s.ttdKepsek}" class="ttd-img" style="${compact ? 'max-height:32px; top:-4px;' : ''}">` : '';
       return `
-        <div style="font-size:${compact ? '8px' : '11px'}; line-height:1.2;">
+        <div style="font-size:${compact ? '8px' : '11px'}; line-height:1.2; color:#000;">
           <p>Kepala Sekolah,</p>
           <div class="ttd-box" style="height:${compact ? '22px' : '38px'};">${imgTag}</div>
           <p style="font-weight:bold; text-decoration:underline;">${s.kepsek || '....................................'}</p>
@@ -1030,7 +1031,7 @@
         tb.innerHTML = slice.map((s, idx) => `
           <tr class="hover:bg-slate-50/80">
             <td class="p-3 text-slate-500">${start + idx + 1}</td>
-            <td class="p-3 font-bold text-blue-600">${s.nis}</td>
+            <td class="p-3 font-bold text-slate-900">${s.nis}</td>
             <td class="p-3 text-xs text-slate-600">${s.nisLokal || '-'} / ${s.nisn || '-'}</td>
             <td class="p-3 font-semibold text-slate-800">${s.nama}</td>
             <td class="p-3"><span class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md text-xs font-bold">${s.kelas}</span></td>
@@ -1321,46 +1322,46 @@
       const list = db.siswa.filter(s => (fr === 'ALL' || (s.ruang || 'R.1') === fr) && (fk === 'ALL' || s.kelas === fk));
       if (!list.length) return Swal.fire('Data Kosong', 'Tidak ada peserta sesuai filter yang dipilih.', 'warning');
 
-      // KARTU DIPEGANG PESERTA (Semua Tulisan Hitam & Besar Mengisi Penuh Kotak, Tanpa TTD KS)
+      // KARTU DIPEGANG PESERTA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
       const buildKartuPeserta = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         return `
-          <div class="kartu-peserta" style="padding: 2mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000; background: #fff; border: 2px dashed #000;">
+          <div class="kartu-peserta" style="padding: 2mm 2.5mm; font-family: 'Plus Jakarta Sans', sans-serif; color: #000000 !important; background: #ffffff !important; border: 2px dashed #000000 !important;">
             <div>
               ${buildKopHTML(false)}
-              <div style="text-align:center; background:#000; color:#fff; padding: 2.5px 4px; border-radius: 3px; margin-bottom: 2px; -webkit-print-color-adjust:exact;">
-                <p style="font-size:9px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.3px;">KARTU UJIAN ${db.settings.kegiatan}</p>
+              <div style="text-align:center; background:#000000 !important; color:#ffffff !important; padding: 3px 4px; border-radius: 3px; margin-bottom: 2px; -webkit-print-color-adjust:exact;">
+                <p style="font-size:9.5px; font-weight:800; margin:0; text-transform:uppercase; letter-spacing:0.3px; color:#ffffff !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 2px;">
-              <table style="width:100%; height:100%; font-size:12px; line-height:1.25; border-collapse:collapse; color:#000;">
+              <table style="width:100%; height:100%; font-size:13.5px; line-height:1.18; border-collapse:collapse; color:#000000 !important;">
                 <tr>
-                  <td width="23%" style="color:#000; font-weight:800; vertical-align:middle;">NAMA</td>
-                  <td width="3%" style="color:#000; font-weight:800; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:13px; text-transform:uppercase; color:#000; vertical-align:middle;">${s.nama}</td>
+                  <td width="24%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">NAMA</td>
+                  <td width="3%" style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
+                  <td colspan="2" style="font-weight:900; font-size:15px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">NIS</td>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">:</td>
-                  <td width="42%" style="font-weight:800; font-size:12px; color:#000; vertical-align:middle;">${s.nisLokal || '-'}</td>
-                  <td rowspan="4" width="32%" style="border:2.5px solid #000; background:#fff; border-radius:4px; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:15px; font-weight:900; color:#000; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NIS</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
+                  <td width="41%" style="font-weight:800; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; border-radius:4px; text-align:center; vertical-align:middle; padding:2px;">
+                    <span style="font-size:17.5px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">NISN</td>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:12px; color:#000; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NISN</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
+                  <td style="font-weight:800; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">NO UJIAN</td>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:12px; color:#000; vertical-align:middle;">${s.nis}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">NO UJIAN</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
+                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">KELAS</td>
-                  <td style="color:#000; font-weight:800; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:12px; color:#000; vertical-align:middle;">${s.kelas}</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">KELAS</td>
+                  <td style="color:#000000 !important; font-weight:800; vertical-align:middle;">:</td>
+                  <td style="font-weight:900; font-size:13.5px; color:#000000 !important; vertical-align:middle;">${s.kelas}</td>
                 </tr>
               </table>
             </div>
@@ -1368,46 +1369,46 @@
         `;
       };
 
-      // KARTU DITEMPEL DI MEJA (Format Klasik Tegas Persis Contoh Excel, Tulisan Besar & Hitam Penuh)
+      // KARTU DITEMPEL DI MEJA (100% Hitam Pekat & Ukuran Font Besar Penuh Kotak)
       const buildKartuMeja = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         return `
-          <div class="kartu-meja" style="padding: 2mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; border: 2px solid #000;">
+          <div class="kartu-meja" style="padding: 2mm 2.5mm; font-family: 'Times New Roman', Times, serif; color: #000000 !important; background: #ffffff !important; border: 2px solid #000000 !important;">
             <div>
               ${buildKopHTML(false)}
-              <div style="text-align:center; padding: 2px 0; border-bottom: 2px solid #000; margin-bottom: 2px;">
-                <p style="font-size:9.5px; font-weight:900; margin:0; text-transform:uppercase; color:#000;">KARTU UJIAN ${db.settings.kegiatan}</p>
+              <div style="text-align:center; padding: 2px 0; border-bottom: 2px solid #000000 !important; margin-bottom: 2px;">
+                <p style="font-size:10px; font-weight:900; margin:0; text-transform:uppercase; color:#000000 !important;">KARTU UJIAN ${db.settings.kegiatan}</p>
               </div>
             </div>
             <div style="flex:1; display:flex; align-items:stretch; padding-top: 2px;">
-              <table style="width:100%; height:100%; font-size:12.5px; line-height:1.22; border-collapse:collapse; color:#000;">
+              <table style="width:100%; height:100%; font-size:14px; line-height:1.16; border-collapse:collapse; color:#000000 !important;">
                 <tr>
-                  <td width="23%" style="font-weight:800; color:#000; vertical-align:middle;">NAMA</td>
-                  <td width="3%" style="font-weight:800; color:#000; vertical-align:middle;">:</td>
-                  <td colspan="2" style="font-weight:900; font-size:13.5px; text-transform:uppercase; color:#000; vertical-align:middle;">${s.nama}</td>
+                  <td width="24%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">NAMA</td>
+                  <td width="3%" style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
+                  <td colspan="2" style="font-weight:900; font-size:15.5px; text-transform:uppercase; color:#000000 !important; vertical-align:middle;">${s.nama}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">NIS</td>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">:</td>
-                  <td width="42%" style="font-weight:800; font-size:12.5px; color:#000; vertical-align:middle;">${s.nisLokal || '-'}</td>
-                  <td rowspan="4" width="32%" style="border:2.5px solid #000; text-align:center; vertical-align:middle; padding:2px;">
-                    <span style="font-size:15.5px; font-weight:900; color:#000; white-space:nowrap;">RUANG ${nomorRuang}</span>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NIS</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
+                  <td width="41%" style="font-weight:800; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nisLokal || '-'}</td>
+                  <td rowspan="4" width="32%" style="border:2.5px solid #000000 !important; background:#ffffff !important; text-align:center; vertical-align:middle; padding:2px;">
+                    <span style="font-size:18px; font-weight:900; color:#000000 !important; white-space:nowrap;">RUANG ${nomorRuang}</span>
                   </td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">NISN</td>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">:</td>
-                  <td style="font-weight:800; font-size:12.5px; color:#000; vertical-align:middle;">${s.nisn || '-'}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NISN</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
+                  <td style="font-weight:800; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.nisn || '-'}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">NO UJIAN</td>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:12.5px; color:#000; vertical-align:middle;">${s.nis}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">NO UJIAN</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
+                  <td style="font-weight:900; font-size:14.5px; color:#000000 !important; vertical-align:middle;">${s.nis}</td>
                 </tr>
                 <tr>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">KELAS</td>
-                  <td style="font-weight:800; color:#000; vertical-align:middle;">:</td>
-                  <td style="font-weight:900; font-size:12.5px; color:#000; vertical-align:middle;">${s.kelas}</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">KELAS</td>
+                  <td style="font-weight:800; color:#000000 !important; vertical-align:middle;">:</td>
+                  <td style="font-weight:900; font-size:14px; color:#000000 !important; vertical-align:middle;">${s.kelas}</td>
                 </tr>
               </table>
             </div>
@@ -1437,15 +1438,15 @@
         <div class="kartu-panitia">
           <div>
             ${buildKopHTML(false)}
-            <div style="text-align:center; background:#1e3a8a; color:#fff; padding:4px; border-radius:4px; margin:6px 0; -webkit-print-color-adjust:exact;">
+            <div style="text-align:center; background:#000; color:#fff; padding:4px; border-radius:4px; margin:6px 0; -webkit-print-color-adjust:exact;">
               <p style="font-size:10.5px; font-weight:800; margin:0;">TANDA PENGENAL PANITIA / PENGAWAS</p>
               <p style="font-size:8px; margin:0;">${db.settings.kegiatan}</p>
             </div>
             <div style="text-align:center; margin-top:10px;">
-              <div style="width:22mm; height:26mm; border:1px solid #94a3b8; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:8px; color:#64748b;">FOTO 3x4</div>
-              <p style="font-size:11.5px; font-weight:800; text-decoration:underline; margin:0;">${p.nama}</p>
-              <p style="font-size:8.5px; color:#475569; margin:2px 0;">NIP/ID: ${p.nip}</p>
-              <div style="display:inline-block; background:#dbeafe; color:#1e40af; font-weight:800; font-size:10px; padding:3px 12px; border-radius:12px; margin-top:4px;">${p.jabatan.toUpperCase()}</div>
+              <div style="width:22mm; height:26mm; border:1px solid #000; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:8px; color:#000;">FOTO 3x4</div>
+              <p style="font-size:11.5px; font-weight:800; text-decoration:underline; margin:0; color:#000;">${p.nama}</p>
+              <p style="font-size:8.5px; color:#000; margin:2px 0;">NIP/ID: ${p.nip}</p>
+              <div style="display:inline-block; border:1.5px solid #000; color:#000; font-weight:800; font-size:10px; padding:3px 12px; border-radius:12px; margin-top:4px;">${p.jabatan.toUpperCase()}</div>
             </div>
           </div>
           <div style="display:flex; justify-content:flex-end;">
@@ -1569,7 +1570,7 @@
                     <p style="font-size:9px; color:#64748b; margin:0;">Meja ${i+1}</p>
                     <p style="font-weight:800; font-size:11px; margin:2px 0;">${s.nis}</p>
                     <p style="font-size:9.5px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.nama}</p>
-                    <p style="font-size:8.5px; color:#2563eb; font-weight:bold; margin:0;">${s.kelas}</p>
+                    <p style="font-size:8.5px; color:#000; font-weight:bold; margin:0;">${s.kelas}</p>
                   </div>
                 `).join('')}
               </div>
