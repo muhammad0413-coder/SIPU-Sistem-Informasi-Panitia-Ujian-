@@ -92,25 +92,39 @@
     .preview-f4-sheet .denah-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
     .preview-f4-sheet .meja-box { border: 1.5px solid #000; padding: 6px; text-align: center; border-radius: 4px; font-size: 10.5px; }
 
-    /* KOP SURAT & TTD */
+    /* KOP SURAT SIMETRIS (FLEXBOX 3 KOLOM SEJAJAR + LOGO PROPORTIONAL) */
     .kop-surat {
-      position: relative; text-align: center; border-bottom: 2px double #000;
-      padding-bottom: 3px; margin-bottom: 3px; min-height: 58px;
-      display: flex; align-items: center; justify-content: center; color: #000;
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      border-bottom: 2px double #000; padding-bottom: 3px; margin-bottom: 3px;
+      min-height: 56px; color: #000;
     }
-    .kop-logo-kiri { position: absolute; left: 2px; top: 1px; width: 54px; height: 54px; object-fit: fill; }
-    .kop-logo-kanan { position: absolute; right: 2px; top: 1px; width: 54px; height: 54px; object-fit: fill; }
-    .kop-teks { padding: 0 58px; line-height: 1.06; color: #000; }
+    .kop-logo-box {
+      width: 54px; height: 54px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .kop-logo-box img {
+      width: 100%; height: 100%; object-fit: contain; display: block;
+    }
+    .kop-teks {
+      flex: 1; text-align: center; line-height: 1.06; color: #000;
+    }
     .kop-teks p { margin: 0; color: #000; }
 
     .kop-surat-besar {
-      position: relative; text-align: center; border-bottom: 3px double #000;
-      padding-bottom: 8px; margin-bottom: 12px; min-height: 78px;
-      display: flex; align-items: center; justify-content: center; color: #000;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 12px;
+      min-height: 78px; color: #000;
     }
-    .kop-surat-besar .kop-logo-kiri { width: 74px; height: 74px; left: 6px; top: 2px; object-fit: fill; }
-    .kop-surat-besar .kop-logo-kanan { width: 74px; height: 74px; right: 6px; top: 2px; object-fit: fill; }
-    .kop-surat-besar .kop-teks { padding: 0 90px; line-height: 1.25; }
+    .kop-surat-besar .kop-logo-box {
+      width: 74px; height: 74px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .kop-surat-besar .kop-logo-box img {
+      width: 100%; height: 100%; object-fit: contain; display: block;
+    }
+    .kop-surat-besar .kop-teks {
+      flex: 1; text-align: center; line-height: 1.25;
+    }
 
     .ttd-box { position: relative; height: 36px; display: flex; align-items: center; justify-content: flex-start; }
     .ttd-img { max-height: 46px; max-width: 120px; object-fit: contain; position: absolute; left: 2px; top: -6px; pointer-events: none; }
@@ -508,7 +522,7 @@
               <i class="fas fa-id-card text-2xl"></i>
             </div>
             <h3 class="text-lg font-extrabold text-slate-800">Cetak Kartu Peserta & Nomor Meja (Kertas F4)</h3>
-            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,6 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Kop surat besar dengan logo kiri & kanan simetris.</p>
+            <p class="text-xs text-slate-500 mt-1 mb-6 max-w-md mx-auto">Ukuran kartu presisi 9,6 × 6,1 cm (10 kartu/lembar F4) tanpa TTD Kepala Sekolah. Kop surat besar dengan logo kiri & kanan simetris proporsional.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 text-left">
               <div>
@@ -830,7 +844,7 @@
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-    // PEMANGKASAN RUANG KOSONG/TRANSPARAN LOGO OTOMATIS AGAR LOGO KIRI & KANAN SAMA BESAR
+    // PEMANGKASAN RUANG KOSONG & PENYUSUNAN LOGO PROPORSIONAL (TIDAK GEPENG/BENJOL)
     function trimImageWhitespace(img) {
       const w = img.width;
       const h = img.height;
@@ -874,6 +888,20 @@
       return tempCanvas;
     }
 
+    function drawProportionalLogo(trimmedCanvas, size = 200) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.min(size / trimmedCanvas.width, size / trimmedCanvas.height);
+      const drawW = Math.round(trimmedCanvas.width * scale);
+      const drawH = Math.round(trimmedCanvas.height * scale);
+      const offsetX = Math.round((size - drawW) / 2);
+      const offsetY = Math.round((size - drawH) / 2);
+      ctx.drawImage(trimmedCanvas, 0, 0, trimmedCanvas.width, trimmedCanvas.height, offsetX, offsetY, drawW, drawH);
+      return canvas.toDataURL('image/png');
+    }
+
     function normalizeSavedLogos() {
       ['logoKiri', 'logoKanan'].forEach(key => {
         const src = db.settings[key];
@@ -881,11 +909,7 @@
         const img = new Image();
         img.onload = function() {
           const trimmed = trimImageWhitespace(img);
-          const canvas = document.createElement('canvas');
-          canvas.width = 200;
-          canvas.height = 200;
-          canvas.getContext('2d').drawImage(trimmed, 0, 0, 200, 200);
-          const normalized = canvas.toDataURL('image/png');
+          const normalized = drawProportionalLogo(trimmed, 200);
           if (normalized !== db.settings[key]) {
             db.settings[key] = normalized;
             localStorage.setItem('sipu_db_v4', JSON.stringify(db));
@@ -903,20 +927,19 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          const canvas = document.createElement('canvas');
+          let dataUrl = '';
           if (key === 'logoKiri' || key === 'logoKanan') {
             const trimmed = trimImageWhitespace(img);
-            canvas.width = 200;
-            canvas.height = 200;
-            canvas.getContext('2d').drawImage(trimmed, 0, 0, 200, 200);
+            dataUrl = drawProportionalLogo(trimmed, 200);
           } else {
+            const canvas = document.createElement('canvas');
             const maxW = 240;
             const scale = Math.min(1, maxW / img.width);
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
             canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            dataUrl = canvas.toDataURL('image/png');
           }
-          const dataUrl = canvas.toDataURL('image/png');
           db.settings[key] = dataUrl;
           const prev = document.getElementById(imgId);
           prev.src = dataUrl;
@@ -985,25 +1008,24 @@
       Swal.fire('Tersimpan!', 'Identitas ujian dan kop surat telah diperbarui.', 'success');
     }
 
-    // KOP SURAT & TTD KEPSEK HELPER
+    // KOP SURAT SIMETRIS & TTD KEPSEK HELPER
     function buildKopHTML(isBesar = false) {
       const s = db.settings;
       const cls = isBesar ? 'kop-surat-besar' : 'kop-surat';
-      const fTitle = isBesar ? '16.5px' : '15px';
-      const fSub = isBesar ? '13.5px' : '12px';
-      const fSmall = isBesar ? '11px' : '9.5px';
-      const padX = isBesar ? '90px' : '58px';
+      const fTitle = isBesar ? '16.5px' : '14.5px';
+      const fSub = isBesar ? '13.5px' : '11.5px';
+      const fSmall = isBesar ? '11px' : '9px';
 
       let html = `<div class="${cls}">`;
-      if (s.logoKiri) html += `<img src="${s.logoKiri}" class="kop-logo-kiri">`;
-      html += `<div class="kop-teks" style="padding: 0 ${padX}; line-height: 1.06;">`;
+      html += `<div class="kop-logo-box">${s.logoKiri ? `<img src="${s.logoKiri}">` : ''}</div>`;
+      html += `<div class="kop-teks">`;
       if (s.kop1 && s.kop1.trim()) html += `<p style="font-size:${fSub}; font-weight:900; color:#000;">${s.kop1}</p>`;
       if (s.kop2 && s.kop2.trim()) html += `<p style="font-size:${fSub}; font-weight:900; color:#000;">${s.kop2}</p>`;
       if (s.kop3 && s.kop3.trim()) html += `<p style="font-size:${fTitle}; font-weight:900; text-transform:uppercase; color:#000;">${s.kop3}</p>`;
       if (s.kop4 && s.kop4.trim()) html += `<p style="font-size:${fSmall}; font-weight:700; color:#000;">${s.kop4}</p>`;
       if (s.kop5 && s.kop5.trim()) html += `<p style="font-size:${fSmall}; font-weight:600; color:#000;">${s.kop5}</p>`;
       html += `</div>`;
-      if (s.logoKanan) html += `<img src="${s.logoKanan}" class="kop-logo-kanan">`;
+      html += `<div class="kop-logo-box">${s.logoKanan ? `<img src="${s.logoKanan}">` : ''}</div>`;
       html += `</div>`;
       return html;
     }
@@ -1409,7 +1431,7 @@
       const list = db.siswa.filter(s => (fr === 'ALL' || (s.ruang || 'R.1') === fr) && (fk === 'ALL' || s.kelas === fk));
       if (!list.length) return Swal.fire('Data Kosong', 'Tidak ada siswa yang sesuai filter cetak.', 'warning');
 
-      // KARTU DIPEGANG PESERTA (Kop & Judul lebih besar dari data di bawahnya)
+      // KARTU DIPEGANG PESERTA
       const buildKartuPeserta = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         const teksKelas = formatKelasTerbilang(s.kelas);
@@ -1457,7 +1479,7 @@
         `;
       };
 
-      // KARTU DITEMPEL DI MEJA (Kop & Judul lebih besar dari data di bawahnya)
+      // KARTU DITEMPEL DI MEJA
       const buildKartuMeja = (s) => {
         const nomorRuang = (s.ruang || 'R.1').replace(/^R\./i, '');
         const teksKelas = formatKelasTerbilang(s.kelas);
