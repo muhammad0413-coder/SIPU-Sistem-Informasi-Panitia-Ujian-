@@ -847,6 +847,9 @@
       if (u === 'admin' && p === (db.pass || 'admin')) {
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('app-section').classList.remove('hidden');
+        if (db.siswa.length === 0 && db.panitia.length === 0) {
+          pullFromCloud(true);
+        }
       } else {
         Swal.fire('Login Gagal', 'Username atau password salah (default: admin / admin)', 'error');
       }
@@ -1837,32 +1840,58 @@
     async function syncToCloud() {
       Swal.fire({ title: 'Menyimpan ke Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
-        const fd = new URLSearchParams();
-        fd.append('action', 'saveData');
-        fd.append('data', JSON.stringify(db));
-        const res = await fetch(API_URL, { method: 'POST', body: fd });
+        // Pastikan form pengaturan terbaru ikut tersimpan sebelum sync
+        if (document.getElementById('set-kop3')) {
+          db.settings.kegiatan = document.getElementById('set-kegiatan').value.trim();
+          db.settings.tahun = document.getElementById('set-tahun').value.trim();
+          db.settings.prefix = document.getElementById('set-prefix').value.trim();
+          db.settings.kapasitas = parseInt(document.getElementById('set-kapasitas').value) || 20;
+          db.settings.kepsek = document.getElementById('set-kepsek').value.trim();
+          db.settings.nipKepsek = document.getElementById('set-nip-kepsek').value.trim();
+          db.settings.ketua = document.getElementById('set-ketua').value.trim();
+          db.settings.nipKetua = document.getElementById('set-nip-ketua').value.trim();
+          db.settings.kop1 = document.getElementById('set-kop1').value.trim();
+          db.settings.kop2 = document.getElementById('set-kop2').value.trim();
+          db.settings.kop3 = document.getElementById('set-kop3').value.trim();
+          db.settings.kop4 = document.getElementById('set-kop4').value.trim();
+          db.settings.kop5 = document.getElementById('set-kop5').value.trim();
+          saveDB();
+        }
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'saveData', data: db })
+        });
         const json = await res.json();
         if (json.success) Swal.fire('Tersinkronisasi!', json.message, 'success');
         else Swal.fire('Gagal Sync', json.message, 'error');
       } catch (err) {
-        Swal.fire('Koneksi Gagal', 'Pastikan Web App Apps Script sudah di-deploy dengan akses Anyone.', 'error');
+        Swal.fire('Koneksi Gagal', 'Pastikan Web App Apps Script sudah di-deploy ulang (New Deployment).', 'error');
       }
     }
 
-    async function pullFromCloud() {
-      Swal.fire({ title: 'Mengambil data dari Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    async function pullFromCloud(silent = false) {
+      if (!silent) Swal.fire({ title: 'Mengambil data dari Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
-        const res = await fetch(`${API_URL}?action=getData`);
+        const res = await fetch(`${API_URL}?action=getData&t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
-          db = { ...db, ...json.data, settings: { ...db.settings, ...(json.data.settings || {}) } };
+          const cloudData = json.data;
+          // Jangan timpa data lokal dengan array kosong jika di sheet memang belum pernah diisi
+          if (Array.isArray(cloudData.siswa) && cloudData.siswa.length > 0) db.siswa = cloudData.siswa;
+          if (Array.isArray(cloudData.panitia) && cloudData.panitia.length > 0) db.panitia = cloudData.panitia;
+          if (Array.isArray(cloudData.jadwal) && cloudData.jadwal.length > 0) db.jadwal = cloudData.jadwal;
+          if (cloudData.totalRuang) db.totalRuang = cloudData.totalRuang;
+          if (cloudData.settings && Object.keys(cloudData.settings).length > 0) {
+            db.settings = { ...db.settings, ...cloudData.settings };
+          }
           saveDB();
-          Swal.fire('Berhasil', 'Data terbaru dari Google Sheet berhasil dimuat.', 'success');
-        } else {
+          if (!silent) Swal.fire('Berhasil', 'Data terbaru dari Google Sheet berhasil dimuat.', 'success');
+        } else if (!silent) {
           Swal.fire('Gagal', json.message || 'Data tidak ditemukan.', 'error');
         }
       } catch (err) {
-        Swal.fire('Koneksi Gagal', 'Gagal terhubung ke server Google Apps Script.', 'error');
+        if (!silent) Swal.fire('Koneksi Gagal', 'Gagal terhubung ke server Google Apps Script.', 'error');
       }
     }
 
