@@ -611,8 +611,13 @@
         <!-- 9. ADMINISTRASI UJIAN -->
         <div id="tab-cetak-admin" class="tab-content hidden space-y-5">
           <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200/70">
-            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Pilih Ruang Cetak Dokumen:</span>
-            <select id="filter-admin-ruang" class="border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold bg-slate-50"></select>
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Filter Cetak Dokumen:</span>
+            <div class="flex flex-wrap gap-2">
+              <select id="filter-admin-ruang" class="border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold bg-slate-50"></select>
+              <select id="filter-admin-kelas" class="border border-slate-200 rounded-xl px-4 py-2 text-xs font-semibold bg-slate-50">
+                <option value="ALL">Semua Kelas (Terpisah 1 Kelas/Halaman)</option>
+              </select>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -621,7 +626,7 @@
                 <i class="fas fa-clipboard-list text-2xl"></i>
               </div>
               <h3 class="font-bold text-slate-800 text-sm">Daftar Hadir Peserta</h3>
-              <p class="text-xs text-slate-500 mt-1.5">Absensi peserta per ruang lengkap dengan kolom tanda tangan.</p>
+              <p class="text-xs text-slate-500 mt-1.5">Absensi peserta terpisah 1 kelas per halaman lengkap dengan kolom tanda tangan.</p>
             </div>
 
             <div onclick="previewAdmin('berita')" class="cursor-pointer bg-white p-6 rounded-2xl shadow-xs border-2 border-transparent hover:border-emerald-500 transition text-center group">
@@ -629,7 +634,7 @@
                 <i class="fas fa-file-signature text-2xl"></i>
               </div>
               <h3 class="font-bold text-slate-800 text-sm">Berita Acara Ujian</h3>
-              <p class="text-xs text-slate-500 mt-1.5">Formulir berita acara pelaksanaan ujian & jumlah kehadiran.</p>
+              <p class="text-xs text-slate-500 mt-1.5">Formulir berita acara pelaksanaan ujian terpisah 1 kelas per halaman.</p>
             </div>
 
             <div onclick="previewAdmin('denah')" class="cursor-pointer bg-white p-6 rounded-2xl shadow-xs border-2 border-transparent hover:border-amber-500 transition text-center group">
@@ -1710,6 +1715,7 @@
 
     function previewAdmin(tipe) {
       const fr = document.getElementById('filter-admin-ruang').value;
+      const fk = document.getElementById('filter-admin-kelas')?.value || 'ALL';
       const ruangList = [];
       if (fr === 'ALL') {
         for (let r = 1; r <= db.totalRuang; r++) ruangList.push(`R.${r}`);
@@ -1719,97 +1725,116 @@
 
       let docs = [];
       ruangList.forEach(rName => {
-        const peserta = db.siswa.filter(s => (s.ruang || 'R.1') === rName);
-        if (tipe === 'hadir') {
-          const rows = peserta.length ? peserta.map((s, idx) => `
-            <tr>
-              <td style="text-align:center;">${idx + 1}</td>
-              <td style="text-align:center; font-weight:bold;">${s.nis}</td>
-              <td>${s.nama}</td>
-              <td style="text-align:center;">${formatKelasTerbilang(s.kelas)}</td>
-              <td style="height:26px;">${idx % 2 === 0 ? `${idx + 1}. ................` : ''}</td>
-              <td style="height:26px;">${idx % 2 === 1 ? `${idx + 1}. ................` : ''}</td>
-            </tr>
-          `).join('') : `<tr><td colspan="6" style="text-align:center; padding:16px;">Belum ada peserta di ${rName}</td></tr>`;
+        const pesertaRuang = db.siswa.filter(s => (s.ruang || 'R.1') === rName);
 
-          docs.push(`
-            <div class="doc-admin">
-              ${buildKopHTML(true)}
-              <div style="text-align:center; margin-bottom:10px;">
-                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; margin:0;">DAFTAR HADIR PESERTA UJIAN</h2>
-                <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
-              </div>
-              <table style="border:none; margin-bottom:8px;">
+        if (tipe === 'hadir' || tipe === 'berita') {
+          let kelasList = [];
+          if (fk === 'ALL') {
+            kelasList = [...new Set(pesertaRuang.map(s => String(s.kelas || '').trim()))].filter(Boolean);
+            if (!kelasList.length) kelasList = [''];
+          } else {
+            kelasList = [fk];
+          }
+
+          kelasList.forEach(kls => {
+            const peserta = kls
+              ? pesertaRuang.filter(s => String(s.kelas || '').trim() === kls)
+              : pesertaRuang;
+            const labelKelas = kls ? formatKelasTerbilang(kls) : 'Semua Kelas';
+
+            if (tipe === 'hadir') {
+              const rows = peserta.length ? peserta.map((s, idx) => `
                 <tr>
-                  <td style="border:none; width:18%; padding:2px;"><strong>Ruang Ujian</strong></td>
-                  <td style="border:none; width:32%; padding:2px;">: <strong>${rName}</strong></td>
-                  <td style="border:none; width:18%; padding:2px;"><strong>Hari / Tanggal</strong></td>
-                  <td style="border:none; width:32%; padding:2px;">: ........................................</td>
+                  <td style="text-align:center;">${idx + 1}</td>
+                  <td style="text-align:center; font-weight:bold;">${s.nis}</td>
+                  <td>${s.nama}</td>
+                  <td style="text-align:center;">${formatKelasTerbilang(s.kelas)}</td>
+                  <td style="height:26px;">${idx % 2 === 0 ? `${idx + 1}. ................` : ''}</td>
+                  <td style="height:26px;">${idx % 2 === 1 ? `${idx + 1}. ................` : ''}</td>
                 </tr>
-                <tr>
-                  <td style="border:none; padding:2px;"><strong>Mata Pelajaran</strong></td>
-                  <td style="border:none; padding:2px;">: ........................................</td>
-                  <td style="border:none; padding:2px;"><strong>Pukul / Sesi</strong></td>
-                  <td style="border:none; padding:2px;">: ........................................</td>
-                </tr>
-              </table>
-              <table>
-                <thead>
-                  <tr>
-                    <th width="6%">No</th>
-                    <th width="18%">No. Ujian</th>
-                    <th width="34%">Nama Lengkap Peserta</th>
-                    <th width="14%">Kelas</th>
-                    <th colspan="2" width="28%">Tanda Tangan</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-              </table>
-              <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
-                ${buildTTDKepsekHTML(false)}
-                <div style="font-size:11px; line-height:1.2;">
-                  <p>Pengawas Ruang,</p>
-                  <div style="height:38px;"></div>
-                  <p style="font-weight:bold;">( ................................................ )</p>
-                  <p style="font-size:10px;">NIP. ........................................</p>
+              `).join('') : `<tr><td colspan="6" style="text-align:center; padding:16px;">Belum ada peserta kelas ${labelKelas} di ${rName}</td></tr>`;
+
+              docs.push(`
+                <div class="doc-admin">
+                  ${buildKopHTML(true)}
+                  <div style="text-align:center; margin-bottom:10px;">
+                    <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; margin:0;">DAFTAR HADIR PESERTA UJIAN</h2>
+                    <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+                  </div>
+                  <table style="border:none; margin-bottom:8px;">
+                    <tr>
+                      <td style="border:none; width:18%; padding:2px;"><strong>Ruang / Kelas</strong></td>
+                      <td style="border:none; width:32%; padding:2px;">: <strong>${rName} / Kelas ${labelKelas}</strong></td>
+                      <td style="border:none; width:18%; padding:2px;"><strong>Hari / Tanggal</strong></td>
+                      <td style="border:none; width:32%; padding:2px;">: ........................................</td>
+                    </tr>
+                    <tr>
+                      <td style="border:none; padding:2px;"><strong>Mata Pelajaran</strong></td>
+                      <td style="border:none; padding:2px;">: ........................................</td>
+                      <td style="border:none; padding:2px;"><strong>Pukul / Sesi</strong></td>
+                      <td style="border:none; padding:2px;">: ........................................</td>
+                    </tr>
+                  </table>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th width="6%">No</th>
+                        <th width="18%">No. Ujian</th>
+                        <th width="34%">Nama Lengkap Peserta</th>
+                        <th width="14%">Kelas</th>
+                        <th colspan="2" width="28%">Tanda Tangan</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                  <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
+                    ${buildTTDKepsekHTML(false)}
+                    <div style="font-size:11px; line-height:1.2;">
+                      <p>Pengawas Ruang,</p>
+                      <div style="height:38px;"></div>
+                      <p style="font-weight:bold;">( ................................................ )</p>
+                      <p style="font-size:10px;">NIP. ........................................</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          `);
-        } else if (tipe === 'berita') {
-          docs.push(`
-            <div class="doc-admin">
-              ${buildKopHTML(true)}
-              <div style="text-align:center; margin-bottom:14px;">
-                <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; text-decoration:underline; margin:0;">BERITA ACARA PELAKSANAAN UJIAN</h2>
-                <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
-              </div>
-              <p style="line-height:1.7; text-align:justify;">
-                Pada hari ini .......................... tanggal ........ bulan .................... tahun ..............., telah diselenggarakan <strong>${db.settings.kegiatan}</strong> bertempat di <strong>${db.settings.kop3}</strong> pada <strong>Ruang ${rName}</strong> mulai pukul ............ sampai dengan pukul ............ WIB.
-              </p>
-              <table style="margin:12px 0;">
-                <tr><td width="40%">Mata Pelajaran</td><td>: ....................................................................................</td></tr>
-                <tr><td>Jumlah Peserta Seharusnya</td><td>: <strong>${peserta.length}</strong> Peserta</td></tr>
-                <tr><td>Jumlah Peserta Hadir</td><td>: ............ Peserta</td></tr>
-                <tr><td>Jumlah Peserta Tidak Hadir</td><td>: ............ Peserta</td></tr>
-                <tr><td>Nomor Peserta Tidak Hadir</td><td>: ....................................................................................</td></tr>
-              </table>
-              <p style="margin-top:10px;"><strong>Catatan Selama Pelaksanaan Ujian:</strong></p>
-              <div style="border:1px solid #000; height:70px; padding:6px; margin-top:4px;"></div>
-              <p style="margin-top:10px;">Demikian berita acara ini dibuat dengan sesungguhnya untuk dapat dipergunakan sebagaimana mestinya.</p>
-              <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
-                ${buildTTDKepsekHTML(false)}
-                <div style="font-size:11px; line-height:1.2;">
-                  <p>Pengawas Ruang,</p>
-                  <div style="height:38px;"></div>
-                  <p style="font-weight:bold;">( ................................................ )</p>
-                  <p style="font-size:10px;">NIP. ........................................</p>
+              `);
+            } else if (tipe === 'berita') {
+              docs.push(`
+                <div class="doc-admin">
+                  ${buildKopHTML(true)}
+                  <div style="text-align:center; margin-bottom:14px;">
+                    <h2 style="font-size:14px; font-weight:800; text-transform:uppercase; text-decoration:underline; margin:0;">BERITA ACARA PELAKSANAAN UJIAN</h2>
+                    <p style="font-size:11.5px; font-weight:600; margin:2px 0;">${db.settings.kegiatan} • TAHUN AJARAN ${db.settings.tahun}</p>
+                  </div>
+                  <p style="line-height:1.7; text-align:justify;">
+                    Pada hari ini .......................... tanggal ........ bulan .................... tahun ..............., telah diselenggarakan <strong>${db.settings.kegiatan}</strong> bertempat di <strong>${db.settings.kop3}</strong> pada <strong>Ruang ${rName} (Kelas ${labelKelas})</strong> mulai pukul ............ sampai dengan pukul ............ WIB.
+                  </p>
+                  <table style="margin:12px 0;">
+                    <tr><td width="40%">Kelas</td><td>: <strong>${labelKelas}</strong></td></tr>
+                    <tr><td>Mata Pelajaran</td><td>: ....................................................................................</td></tr>
+                    <tr><td>Jumlah Peserta Seharusnya</td><td>: <strong>${peserta.length}</strong> Peserta</td></tr>
+                    <tr><td>Jumlah Peserta Hadir</td><td>: ............ Peserta</td></tr>
+                    <tr><td>Jumlah Peserta Tidak Hadir</td><td>: ............ Peserta</td></tr>
+                    <tr><td>Nomor Peserta Tidak Hadir</td><td>: ....................................................................................</td></tr>
+                  </table>
+                  <p style="margin-top:10px;"><strong>Catatan Selama Pelaksanaan Ujian:</strong></p>
+                  <div style="border:1px solid #000; height:70px; padding:6px; margin-top:4px;"></div>
+                  <p style="margin-top:10px;">Demikian berita acara ini dibuat dengan sesungguhnya untuk dapat dipergunakan sebagaimana mestinya.</p>
+                  <div style="display:flex; justify-content:space-between; margin-top:24px; padding:0 16px;">
+                    ${buildTTDKepsekHTML(false)}
+                    <div style="font-size:11px; line-height:1.2;">
+                      <p>Pengawas Ruang,</p>
+                      <div style="height:38px;"></div>
+                      <p style="font-weight:bold;">( ................................................ )</p>
+                      <p style="font-size:10px;">NIP. ........................................</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          `);
+              `);
+            }
+          });
         } else if (tipe === 'denah') {
-          const boxes = peserta.length ? peserta.map((s, idx) => `
+          const boxes = pesertaRuang.length ? pesertaRuang.map((s, idx) => `
             <div class="meja-box">
               <div style="font-weight:800; background:#f1f5f9; border-bottom:1px solid #000; margin:-6px -6px 4px -6px; padding:2px;">MEJA ${idx + 1}</div>
               <p style="font-weight:800; margin:0; font-size:10px;">${s.nis}</p>
@@ -1832,7 +1857,7 @@
         }
       });
 
-      const titleMap = { hadir: 'Daftar Hadir Peserta', berita: 'Berita Acara Ujian', denah: 'Denah Tempat Duduk' };
+      const titleMap = { hadir: 'Daftar Hadir Peserta (Per Kelas)', berita: 'Berita Acara Ujian (Per Kelas)', denah: 'Denah Tempat Duduk' };
       openPreviewModal(`Pratinjau ${titleMap[tipe]} (F4)`, docs.join(''));
     }
 
@@ -1840,7 +1865,6 @@
     async function syncToCloud() {
       Swal.fire({ title: 'Menyimpan ke Google Sheet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
-        // Pastikan form pengaturan terbaru ikut tersimpan sebelum sync
         if (document.getElementById('set-kop3')) {
           db.settings.kegiatan = document.getElementById('set-kegiatan').value.trim();
           db.settings.tahun = document.getElementById('set-tahun').value.trim();
@@ -1877,7 +1901,6 @@
         const json = await res.json();
         if (json.success && json.data) {
           const cloudData = json.data;
-          // Jangan timpa data lokal dengan array kosong jika di sheet memang belum pernah diisi
           if (Array.isArray(cloudData.siswa) && cloudData.siswa.length > 0) db.siswa = cloudData.siswa;
           if (Array.isArray(cloudData.panitia) && cloudData.panitia.length > 0) db.panitia = cloudData.panitia;
           if (Array.isArray(cloudData.jadwal) && cloudData.jadwal.length > 0) db.jadwal = cloudData.jadwal;
@@ -1936,9 +1959,11 @@
       document.getElementById('dash-ketua').innerText = db.settings.ketua || '-';
 
       const kelasSet = [...new Set(db.siswa.map(s => s.kelas))].sort();
-      const kelasOpts = `<option value="ALL">Semua Kelas</option>` + kelasSet.map(k => `<option value="${k}">${k}</option>`).join('');
+      const kelasOpts = `<option value="ALL">Semua Kelas</option>` + kelasSet.map(k => `<option value="${k}">${formatKelasTerbilang(k)}</option>`).join('');
+      const kelasAdminOpts = `<option value="ALL">Semua Kelas (Terpisah 1 Kelas/Halaman)</option>` + kelasSet.map(k => `<option value="${k}">Kelas ${formatKelasTerbilang(k)}</option>`).join('');
       if (document.getElementById('filter-kelas-siswa')) document.getElementById('filter-kelas-siswa').innerHTML = kelasOpts;
       if (document.getElementById('filter-cetak-kelas')) document.getElementById('filter-cetak-kelas').innerHTML = kelasOpts;
+      if (document.getElementById('filter-admin-kelas')) document.getElementById('filter-admin-kelas').innerHTML = kelasAdminOpts;
 
       let ruangOpts = `<option value="ALL">Semua Ruangan (R.1 - R.${db.totalRuang})</option>`;
       for (let r = 1; r <= db.totalRuang; r++) ruangOpts += `<option value="R.${r}">Ruang ${r} (R.${r})</option>`;
